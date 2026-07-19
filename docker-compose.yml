@@ -1,0 +1,40 @@
+name: mara-mortgage
+
+# Local development infrastructure only — the API itself runs on the host
+# (pnpm dev) for fast reload; it connects to these containers.
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-mara}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mara_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-mara_mortgage}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-mara} -d ${POSTGRES_DB:-mara_mortgage}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    # Persistence on: BullMQ job state should survive a container restart in dev.
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  postgres_data:
+  redis_data:
