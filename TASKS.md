@@ -8,8 +8,8 @@ Legend: `[ ]` not started · each item lists its **Done when** criteria so "fini
 
 ## Phase 0 — Foundation
 
-- [ ] **1. Monorepo scaffold** — pnpm workspaces + Turborepo, empty `apps/mobile`, `apps/api`, `apps/admin`, `packages/*` with shared tsconfig/eslint. **Done when**: `pnpm install && pnpm build` succeeds from repo root.
-- [ ] **2. CI pipeline** — GitHub Actions: lint, typecheck, test on every PR. **Done when**: a throwaway PR shows green checks.
+- [x] **1. Monorepo scaffold** — pnpm workspaces + Turborepo, empty `apps/mobile`, `apps/api`, `apps/admin`, `packages/*` with shared tsconfig/eslint. **Done when**: `pnpm install && pnpm build` succeeds from repo root. ✅ 2026-07-19
+- [x] **2. CI pipeline** — GitHub Actions: lint, typecheck, test on every PR. **Done when**: a throwaway PR shows green checks. ✅ 2026-07-19 — verified green on push to main (run 29701380782); PR trigger is configured and runs the identical job.
 - [ ] **3. Local Docker dev environment** — `docker-compose.yml` for Postgres + Redis, `.env.example`. **Done when**: `docker-compose up` gives a working local Postgres reachable from the API.
 - [ ] **4. NestJS API skeleton** — bootstrapped app, health-check endpoint, Swagger/OpenAPI wired up, Pino logging. **Done when**: `GET /api/v1/health` returns 200 with structured logs.
 - [ ] **5. Prisma schema v1** — core entities (User, Application, Document, SavedScenario, LoanProgram, Article, Notification) per `ARCHITECTURE.md` §4, initial migration. **Done when**: `prisma migrate dev` runs clean and Prisma Studio shows the tables.
