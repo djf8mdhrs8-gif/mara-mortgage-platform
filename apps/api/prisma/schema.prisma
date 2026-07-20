@@ -1,0 +1,182 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- Enums ----------
+
+enum UserRole {
+  BORROWER
+  REALTOR
+  LOAN_OFFICER
+  ADMIN
+}
+
+enum ApplicationStatus {
+  DRAFT
+  SUBMITTED
+  PROCESSING
+  UNDERWRITING
+  CONDITIONALLY_APPROVED
+  CLEAR_TO_CLOSE
+  CLOSED
+  CANCELLED
+}
+
+enum DocumentStatus {
+  UPLOADED
+  IN_REVIEW
+  ACCEPTED
+  NEEDS_RESUBMISSION
+}
+
+enum ScenarioType {
+  BASIC
+  EXTRA_PAYMENT
+  REFINANCE
+  AFFORDABILITY
+  RENT_VS_BUY
+  BUYDOWN
+  PROPERTY_ANALYSIS
+}
+
+enum NotificationType {
+  DOCUMENT_REMINDER
+  LOAN_MILESTONE
+  RATE_UPDATE
+  EDUCATIONAL
+  CLOSING_REMINDER
+  GENERAL
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+// ---------- Models ----------
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  firstName String
+  lastName  String
+  phone     String?
+  role      UserRole @default(BORROWER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  applications  Application[]
+  documents     Document[]
+  scenarios     SavedScenario[]
+  notifications Notification[]
+
+  @@map("users")
+}
+
+model Application {
+  id          String            @id @default(cuid())
+  userId      String
+  // Arive's loan identifier, once the application exists in the LOS.
+  // Nullable: a record is created locally before the Arive handoff completes.
+  ariveLoanId String?           @unique
+  status      ApplicationStatus @default(DRAFT)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  documents Document[]
+
+  @@index([userId])
+  @@map("applications")
+}
+
+model Document {
+  id            String         @id @default(cuid())
+  applicationId String
+  uploaderId    String
+  fileName      String
+  // Key in object storage (S3/R2). The file itself never lives in Postgres.
+  storageKey    String         @unique
+  mimeType      String
+  sizeBytes     Int
+  status        DocumentStatus @default(UPLOADED)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  uploader    User        @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
+  @@index([uploaderId])
+  @@map("documents")
+}
+
+model SavedScenario {
+  id     String       @id @default(cuid())
+  userId String
+  type   ScenarioType
+  name   String
+  // Calculator inputs/outputs are stored as JSON snapshots. Outputs are
+  // recomputed server-side when shown as authoritative (see ARCHITECTURE.md §4).
+  inputs  Json
+  outputs Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("saved_scenarios")
+}
+
+model LoanProgram {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  title     String
+  summary   String
+  // Markdown body rendered by the mobile app
+  content   String
+  sortOrder Int      @default(0)
+  published Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("loan_programs")
+}
+
+model Article {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  title       String
+  excerpt     String?
+  content     String
+  published   Boolean   @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("articles")
+}
+
+model Notification {
+  id     String             @id @default(cuid())
+  userId String
+  type   NotificationType
+  title  String
+  body   String
+  status NotificationStatus @default(PENDING)
+  sentAt DateTime?
+  readAt DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@map("notifications")
+}
