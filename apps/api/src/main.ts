@@ -1,3 +1,5 @@
+import { writeFileSync } from 'node:fs';
+
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
@@ -22,12 +24,29 @@ async function bootstrap(): Promise<void> {
   );
   app.enableShutdownHooks();
 
+  // Dev-only CORS so the Expo web preview (different port) can call the API.
+  // Production origins are locked down when we deploy (see ARCHITECTURE.md §6).
+  if (process.env.NODE_ENV !== 'production') {
+    app.enableCors();
+  }
+
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Mara Mortgage API')
     .setVersion('1.0')
     .addBearerAuth()
     .build();
-  SwaggerModule.setup('api/docs', app, () => SwaggerModule.createDocument(app, swaggerConfig));
+  const buildDocument = (): ReturnType<typeof SwaggerModule.createDocument> =>
+    SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('api/docs', app, buildDocument);
+
+  // Spec-emission mode: write openapi.json and exit instead of serving.
+  // Used by `pnpm openapi:generate` to feed the typed-client pipeline.
+  if (process.env.GENERATE_OPENAPI === '1') {
+    const outPath = process.env.OPENAPI_OUT ?? 'openapi.json';
+    writeFileSync(outPath, `${JSON.stringify(buildDocument(), null, 2)}\n`);
+    await app.close();
+    return;
+  }
 
   const config = app.get(ConfigService);
   const port = config.get<number>('API_PORT', 3001);
