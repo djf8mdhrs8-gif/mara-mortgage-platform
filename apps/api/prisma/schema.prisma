@@ -75,8 +75,40 @@ model User {
   documents     Document[]
   scenarios     SavedScenario[]
   notifications Notification[]
+  credential    AuthCredential?
+  refreshTokens RefreshToken[]
 
   @@map("users")
+}
+
+model AuthCredential {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  // Argon2id hash — never the password itself
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("auth_credentials")
+}
+
+model RefreshToken {
+  id           String    @id @default(cuid())
+  userId       String
+  // SHA-256 of the opaque token — a DB leak alone can't forge sessions
+  tokenHash    String    @unique
+  expiresAt    DateTime
+  // Rotation trail: set on use; a revoked token being replayed signals theft
+  revokedAt    DateTime?
+  replacedById String?
+  createdAt    DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
 }
 
 model Application {

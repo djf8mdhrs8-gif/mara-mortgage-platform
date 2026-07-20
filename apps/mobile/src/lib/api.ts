@@ -1,5 +1,7 @@
 import type { paths } from '@mara/shared-types';
-import createClient from 'openapi-fetch';
+import createClient, { type Middleware } from 'openapi-fetch';
+
+import { useAuthStore } from '@/features/auth/store';
 
 /**
  * Typed API client — every route, param, and response shape comes from the
@@ -12,4 +14,15 @@ import createClient from 'openapi-fetch';
  */
 const baseUrl = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001';
 
+const authMiddleware: Middleware = {
+  onRequest({ request }) {
+    const token = useAuthStore.getState().accessToken;
+    if (token !== null && !request.headers.has('Authorization')) {
+      request.headers.set('Authorization', `Bearer ${token}`);
+    }
+    return request;
+  },
+};
+
 export const api = createClient<paths>({ baseUrl });
+api.use(authMiddleware);

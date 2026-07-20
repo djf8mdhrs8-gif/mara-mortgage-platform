@@ -20,7 +20,7 @@ Legend: `[ ]` not started · each item lists its **Done when** criteria so "fini
 ## Phase 1 — MVP
 
 ### Auth & identity
-- [ ] **9. User registration + login (email/password)** — Argon2id hashing, JWT access + refresh token issuance, refresh rotation. **Done when**: a user can register, log out, and log back in from the mobile app.
+- [x] **9. User registration + login (email/password)** — Argon2id hashing, JWT access + refresh token issuance, refresh rotation. **Done when**: a user can register, log out, and log back in from the mobile app. ✅ 2026-07-20 — auth module (register/login/refresh/logout/me), Argon2id, rotating opaque refresh tokens with reuse-detection (replay revokes all sessions), 7 unit tests on the token lifecycle; mobile login/register forms (RHF+zod) + auth gate; full register→logout→login cycle verified in the web preview UI.
 - [ ] **10. Secure token storage + session persistence** — refresh token in `expo-secure-store`, silent token refresh on app resume. **Done when**: closing and reopening the app keeps the user logged in without a visible flicker to the login screen.
 - [ ] **11. Biometric unlock** — Face ID/Touch ID/Fingerprint gate on app resume via `expo-local-authentication`. **Done when**: biometric prompt appears on resume and correctly gates access to the stored session.
 - [ ] **12. Role-based access control** — borrower/realtor/loan_officer/admin roles, NestJS guards, row-level ownership checks on borrower data. **Done when**: a borrower account cannot fetch another borrower's application via direct API call (tested, not assumed).
