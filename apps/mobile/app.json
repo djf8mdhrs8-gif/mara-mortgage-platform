@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "Mara Mortgage",
+    "slug": "mara-mortgage",
+    "version": "0.1.0",
+    "scheme": "maramortgage",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.maramortgage.app"
+    },
+    "android": {
+      "package": "com.maramortgage.app",
+      "edgeToEdgeEnabled": true
+    },
+    "web": {
+      "output": "static"
+    },
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

@@ -1,8 +1,12 @@
 {
-  "extends": "../../packages/config/tsconfig/base.json",
+  "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "outDir": "dist",
-    "rootDir": "src"
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
-  "include": ["src"]
+  "include": ["app", "src", "expo-env.d.ts", ".expo/types/**/*.ts"]
 }
