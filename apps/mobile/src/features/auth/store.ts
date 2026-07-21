@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 
+import { clearStoredRefreshToken, setStoredRefreshToken } from './tokenStorage';
+
 export interface SessionUser {
   id: string;
   email: string;
@@ -9,6 +11,8 @@ export interface SessionUser {
 }
 
 interface AuthState {
+  /** 'restoring' until the startup session-restore attempt finishes. */
+  status: 'restoring' | 'ready';
   user: SessionUser | null;
   accessToken: string | null;
   refreshToken: string | null;
@@ -18,17 +22,22 @@ interface AuthState {
     refreshToken: string;
   }) => void;
   clearSession: () => void;
+  setReady: () => void;
 }
 
-/**
- * In-memory session only (cleared on app restart). Milestone 10 moves the
- * refresh token into expo-secure-store and adds silent session restore.
- */
 export const useAuthStore = create<AuthState>((set) => ({
+  status: 'restoring',
   user: null,
   accessToken: null,
   refreshToken: null,
-  setSession: ({ user, accessToken, refreshToken }) =>
-    set({ user, accessToken, refreshToken }),
-  clearSession: () => set({ user: null, accessToken: null, refreshToken: null }),
+  setSession: ({ user, accessToken, refreshToken }) => {
+    set({ user, accessToken, refreshToken, status: 'ready' });
+    // Fire-and-forget: UI must not wait on Keychain writes.
+    void setStoredRefreshToken(refreshToken);
+  },
+  clearSession: () => {
+    set({ user: null, accessToken: null, refreshToken: null, status: 'ready' });
+    void clearStoredRefreshToken();
+  },
+  setReady: () => set({ status: 'ready' }),
 }));
