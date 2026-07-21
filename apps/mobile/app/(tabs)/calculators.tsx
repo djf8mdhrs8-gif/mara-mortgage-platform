@@ -16,7 +16,12 @@ const CALCULATORS = [
     description: 'See how extra payments cut years and interest off your loan',
     ready: true,
   },
-  { href: null, title: 'Refinance', description: 'Coming in Milestone 17', ready: false },
+  {
+    href: '/calculators/refinance',
+    title: 'Refinance',
+    description: 'Compare your current loan to a new one — savings and break-even',
+    ready: true,
+  },
   { href: null, title: 'Affordability', description: 'Coming in Milestone 18', ready: false },
 ] as const;
 

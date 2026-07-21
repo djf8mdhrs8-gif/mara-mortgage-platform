@@ -78,8 +78,21 @@ export function buildAmortization(
 ): AmortizationResult {
   assertParams(params);
   const { principal, annualRatePct, termMonths } = params;
-  const r = annualRatePct / 100 / 12;
   const paymentCents = toCents(monthlyPayment(params));
+
+  // Exact half-up monthly interest in cents via integer arithmetic:
+  // interest = balance · (rate% / 12 / 100). Floating-point rounding of
+  // x.xx5-edge cases drifts a cent over long schedules versus decimal math,
+  // so the division is done in BigInt with an explicit half-up rule.
+  const RATE_SCALE = 100_000_000n;
+  const rateScaled = BigInt(Math.round(annualRatePct * 1e8));
+  const denominator = 1200n * RATE_SCALE;
+  const interestCentsOn = (balCents: number): number => {
+    const numerator = BigInt(balCents) * rateScaled;
+    const q = numerator / denominator;
+    const rem = numerator % denominator;
+    return Number(rem * 2n >= denominator ? q + 1n : q);
+  };
 
   const schedule: AmortizationEntry[] = [];
   let balanceCents = toCents(principal);
@@ -94,7 +107,7 @@ export function buildAmortization(
   while (balanceCents > 0 && paymentNumber < maxPayments) {
     paymentNumber += 1;
     const extraCents = extraCentsForMonth?.(paymentNumber) ?? 0;
-    const interestCents = roundCents(balanceCents * r);
+    const interestCents = interestCentsOn(balanceCents);
     let principalCents = paymentCents - interestCents + extraCents;
     let paidCents = paymentCents + extraCents;
 

@@ -22,3 +22,8 @@ export {
   type ExtraPaymentInputs,
   type ExtraPaymentResult,
 } from './extra-payment';
+export {
+  calculateRefinance,
+  type RefinanceInputs,
+  type RefinanceResult,
+} from './refinance';

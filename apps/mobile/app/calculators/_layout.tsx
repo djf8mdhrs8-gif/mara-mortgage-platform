@@ -13,6 +13,7 @@ export default function CalculatorsLayout() {
       <Stack.Screen name="basic" options={{ title: 'Mortgage Payment' }} />
       <Stack.Screen name="amortization" options={{ title: 'Amortization Schedule' }} />
       <Stack.Screen name="extra" options={{ title: 'Extra Payments' }} />
+      <Stack.Screen name="refinance" options={{ title: 'Refinance' }} />
     </Stack>
   );
 }
