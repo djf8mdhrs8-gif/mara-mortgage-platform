@@ -12,3 +12,8 @@ export {
   type AmortizationEntry,
   type AmortizationResult,
 } from './amortization';
+export {
+  calculateBasicMortgage,
+  type BasicMortgageInputs,
+  type BasicMortgageResult,
+} from './basic';

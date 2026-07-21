@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
+    "@mara/mortgage-calc": "workspace:*",
     "@mara/shared-types": "workspace:*",
     "@tanstack/react-query": "^5.101.2",
     "expo": "~57.0.7",
