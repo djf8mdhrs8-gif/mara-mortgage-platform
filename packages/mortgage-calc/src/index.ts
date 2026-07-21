@@ -27,3 +27,8 @@ export {
   type RefinanceInputs,
   type RefinanceResult,
 } from './refinance';
+export {
+  calculateAffordability,
+  type AffordabilityInputs,
+  type AffordabilityResult,
+} from './affordability';

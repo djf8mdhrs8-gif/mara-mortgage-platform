@@ -22,7 +22,12 @@ const CALCULATORS = [
     description: 'Compare your current loan to a new one — savings and break-even',
     ready: true,
   },
-  { href: null, title: 'Affordability', description: 'Coming in Milestone 18', ready: false },
+  {
+    href: '/calculators/affordability',
+    title: 'Affordability',
+    description: 'How much home your income and debts support (28/36 rule)',
+    ready: true,
+  },
 ] as const;
 
 export default function CalculatorsScreen() {
