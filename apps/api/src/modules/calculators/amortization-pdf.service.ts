@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { buildAmortization, type AmortizationParams } from '@mara/mortgage-calc';
+import { buildExtraPaymentPlan, type ExtraPaymentInputs } from '@mara/mortgage-calc';
 import PDFDocument from 'pdfkit';
 
 const NAVY = '#0F2A4A';
@@ -31,9 +31,12 @@ export class AmortizationPdfService {
   /**
    * Renders the authoritative amortization schedule (recomputed server-side
    * from the shared engine — never client-supplied rows) as a PDF buffer.
+   * Extra-payment inputs, when present, produce the accelerated schedule
+   * plus a savings line in the header.
    */
-  async render(params: AmortizationParams & { label?: string }): Promise<Buffer> {
-    const result = buildAmortization(params);
+  async render(params: ExtraPaymentInputs & { label?: string }): Promise<Buffer> {
+    const result = buildExtraPaymentPlan(params);
+    const hasExtras = result.monthsSaved > 0 || result.interestSaved > 0;
 
     // compress:false keeps text operators greppable, which lets tests assert
     // the PDF actually contains the expected figures.
@@ -59,6 +62,15 @@ export class AmortizationPdfService {
         `Loan ${money(params.principal)}  ·  ${params.annualRatePct}% APR  ·  ${params.termMonths} months  ·  ` +
           `Payment ${money(result.monthlyPayment)}  ·  Total interest ${money(result.totalInterest)}  ·  Total paid ${money(result.totalPaid)}`,
       );
+    if (hasExtras) {
+      doc
+        .fillColor(NAVY)
+        .fontSize(9)
+        .font('Helvetica-Bold')
+        .text(
+          `With extra payments: paid off ${result.monthsSaved} months sooner  ·  interest saved ${money(result.interestSaved)}`,
+        );
+    }
     doc.moveDown(0.5);
 
     const drawTableHeader = (): void => {

@@ -9,6 +9,10 @@ interface ExportParams {
   annualRatePct: number;
   termMonths: number;
   label?: string;
+  extraMonthly?: number;
+  extraAnnual?: number;
+  oneTimeAmount?: number;
+  oneTimeMonth?: number;
 }
 
 /**

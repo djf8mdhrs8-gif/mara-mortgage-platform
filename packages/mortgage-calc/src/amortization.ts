@@ -68,8 +68,14 @@ export function monthlyPayment(params: AmortizationParams): number {
  * convention lenders use, so rows match real statements:
  *   interest_k = round(balance_k · r), principal_k = payment − interest_k,
  * and the final payment settles the exact remaining balance.
+ *
+ * `extraCentsForMonth` (used by the extra-payment calculator) returns
+ * additional principal, in cents, to apply on a given payment number.
  */
-export function buildAmortization(params: AmortizationParams): AmortizationResult {
+export function buildAmortization(
+  params: AmortizationParams,
+  extraCentsForMonth?: (paymentNumber: number) => number,
+): AmortizationResult {
   assertParams(params);
   const { principal, annualRatePct, termMonths } = params;
   const r = annualRatePct / 100 / 12;
@@ -87,9 +93,10 @@ export function buildAmortization(params: AmortizationParams): AmortizationResul
 
   while (balanceCents > 0 && paymentNumber < maxPayments) {
     paymentNumber += 1;
+    const extraCents = extraCentsForMonth?.(paymentNumber) ?? 0;
     const interestCents = roundCents(balanceCents * r);
-    let principalCents = paymentCents - interestCents;
-    let paidCents = paymentCents;
+    let principalCents = paymentCents - interestCents + extraCents;
+    let paidCents = paymentCents + extraCents;
 
     if (principalCents <= 0 && paymentNumber >= maxPayments) {
       throw new RangeError('payment does not amortize the loan');

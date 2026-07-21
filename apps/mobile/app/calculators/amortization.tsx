@@ -1,4 +1,4 @@
-import { buildAmortization, type AmortizationEntry } from '@mara/mortgage-calc';
+import { buildExtraPaymentPlan, type AmortizationEntry } from '@mara/mortgage-calc';
 import { useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
@@ -27,25 +27,47 @@ function Row({ entry }: { entry: AmortizationEntry }) {
   );
 }
 
+function toNum(value: string | string[] | undefined): number {
+  return typeof value === 'string' && value !== '' ? Number(value) : 0;
+}
+
 export default function AmortizationScreen() {
   const params = useLocalSearchParams<{
     principal?: string;
     rate?: string;
     term?: string;
     label?: string;
+    extraMonthly?: string;
+    extraAnnual?: string;
+    oneTimeAmount?: string;
+    oneTimeMonth?: string;
   }>();
 
-  const principal = Number(params.principal);
-  const annualRatePct = Number(params.rate);
-  const termMonths = Number(params.term);
+  const principal = toNum(params.principal);
+  const annualRatePct = toNum(params.rate);
+  const termMonths = toNum(params.term);
+  const extraMonthly = toNum(params.extraMonthly);
+  const extraAnnual = toNum(params.extraAnnual);
+  const oneTimeAmount = toNum(params.oneTimeAmount);
+  const oneTimeMonth = toNum(params.oneTimeMonth);
 
   const result = useMemo(() => {
     try {
-      return buildAmortization({ principal, annualRatePct, termMonths });
+      return buildExtraPaymentPlan({
+        principal,
+        annualRatePct,
+        termMonths,
+        extraMonthly,
+        extraAnnual,
+        oneTime:
+          oneTimeAmount > 0 && oneTimeMonth > 0
+            ? { amount: oneTimeAmount, month: oneTimeMonth }
+            : undefined,
+      });
     } catch {
       return null;
     }
-  }, [principal, annualRatePct, termMonths]);
+  }, [principal, annualRatePct, termMonths, extraMonthly, extraAnnual, oneTimeAmount, oneTimeMonth]);
 
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
@@ -60,6 +82,8 @@ export default function AmortizationScreen() {
     );
   }
 
+  const hasExtras = result.monthsSaved > 0 || result.interestSaved > 0;
+
   const onExport = async (): Promise<void> => {
     setExporting(true);
     setExportError(null);
@@ -69,6 +93,10 @@ export default function AmortizationScreen() {
         annualRatePct,
         termMonths,
         label: typeof params.label === 'string' ? params.label : undefined,
+        extraMonthly: extraMonthly > 0 ? extraMonthly : undefined,
+        extraAnnual: extraAnnual > 0 ? extraAnnual : undefined,
+        oneTimeAmount: oneTimeAmount > 0 ? oneTimeAmount : undefined,
+        oneTimeMonth: oneTimeAmount > 0 && oneTimeMonth > 0 ? oneTimeMonth : undefined,
       });
     } catch {
       setExportError('Export failed — check your connection and try again.');
@@ -87,6 +115,12 @@ export default function AmortizationScreen() {
           Payment {money(result.monthlyPayment)} · Total interest {money(result.totalInterest)} ·
           Total paid {money(result.totalPaid)} · {result.payoffMonths} payments
         </Text>
+        {hasExtras ? (
+          <Text style={styles.savings} testID="amort-savings">
+            Extra payments: paid off {result.monthsSaved} months sooner · interest saved{' '}
+            {money(result.interestSaved)}
+          </Text>
+        ) : null}
         <PrimaryButton title="Export PDF" onPress={() => void onExport()} loading={exporting} />
         {exportError !== null ? <Text style={styles.error}>{exportError}</Text> : null}
       </View>
@@ -136,6 +170,11 @@ const styles = StyleSheet.create({
   summaryDetail: {
     ...typography.caption,
     color: colors.textSecondary,
+  },
+  savings: {
+    ...typography.caption,
+    color: colors.success,
+    fontWeight: '700',
   },
   row: {
     flexDirection: 'row',

@@ -239,6 +239,14 @@ export interface components {
              * @example 123 Main St
              */
             label?: string;
+            /** @description Extra principal every month (dollars) */
+            extraMonthly?: number;
+            /** @description Annual lump sum applied every 12th payment (dollars) */
+            extraAnnual?: number;
+            /** @description One-time extra payment amount (dollars) */
+            oneTimeAmount?: number;
+            /** @description Payment number the one-time extra applies to */
+            oneTimeMonth?: number;
         };
         HealthResponseDto: {
             /** @enum {string} */

@@ -17,3 +17,8 @@ export {
   type BasicMortgageInputs,
   type BasicMortgageResult,
 } from './basic';
+export {
+  buildExtraPaymentPlan,
+  type ExtraPaymentInputs,
+  type ExtraPaymentResult,
+} from './extra-payment';

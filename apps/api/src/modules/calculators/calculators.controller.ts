@@ -19,6 +19,15 @@ export class CalculatorsController {
   @ApiProduces('application/pdf')
   @ApiOkResponse({ description: 'Amortization schedule as a PDF document' })
   async exportPdf(@Body() dto: AmortizationPdfRequestDto): Promise<StreamableFile> {
-    return new StreamableFile(await this.amortizationPdf.render(dto));
+    const { oneTimeAmount, oneTimeMonth, ...rest } = dto;
+    return new StreamableFile(
+      await this.amortizationPdf.render({
+        ...rest,
+        oneTime:
+          oneTimeAmount !== undefined && oneTimeAmount > 0 && oneTimeMonth !== undefined
+            ? { amount: oneTimeAmount, month: oneTimeMonth }
+            : undefined,
+      }),
+    );
   }
 }

@@ -10,7 +10,12 @@ const CALCULATORS = [
     description: 'Monthly payment, cash to close, and full cost breakdown',
     ready: true,
   },
-  { href: null, title: 'Extra Payments', description: 'Coming in Milestone 16', ready: false },
+  {
+    href: '/calculators/extra',
+    title: 'Extra Payments',
+    description: 'See how extra payments cut years and interest off your loan',
+    ready: true,
+  },
   { href: null, title: 'Refinance', description: 'Coming in Milestone 17', ready: false },
   { href: null, title: 'Affordability', description: 'Coming in Milestone 18', ready: false },
 ] as const;

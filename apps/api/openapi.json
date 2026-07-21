@@ -577,6 +577,22 @@
             "type": "string",
             "description": "Label shown on the PDF header",
             "example": "123 Main St"
+          },
+          "extraMonthly": {
+            "type": "number",
+            "description": "Extra principal every month (dollars)"
+          },
+          "extraAnnual": {
+            "type": "number",
+            "description": "Annual lump sum applied every 12th payment (dollars)"
+          },
+          "oneTimeAmount": {
+            "type": "number",
+            "description": "One-time extra payment amount (dollars)"
+          },
+          "oneTimeMonth": {
+            "type": "number",
+            "description": "Payment number the one-time extra applies to"
           }
         },
         "required": [
