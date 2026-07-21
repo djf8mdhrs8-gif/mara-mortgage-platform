@@ -1,4 +1,5 @@
 import { calculateBasicMortgage, type BasicMortgageResult } from '@mara/mortgage-calc';
+import { Link } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
   KeyboardAvoidingView,
@@ -183,6 +184,20 @@ export default function BasicCalculatorScreen() {
                 </Text>
               </View>
               <ResultRow label="Cash needed to close" value={money(result.cashToClose)} />
+              <Link
+                href={{
+                  pathname: '/calculators/amortization',
+                  params: {
+                    principal: String(result.loanAmount),
+                    rate: rate,
+                    term: String(Math.round(num(years) * 12)),
+                  },
+                }}
+                style={styles.scheduleLink}
+                testID="calc-schedule-link"
+              >
+                View amortization schedule →
+              </Link>
             </>
           )}
         </View>
@@ -300,5 +315,11 @@ const styles = StyleSheet.create({
     fontSize: 22,
     color: colors.primary,
     fontVariant: ['tabular-nums'],
+  },
+  scheduleLink: {
+    ...typography.body,
+    color: colors.primary,
+    fontWeight: '600',
+    marginTop: spacing.sm,
   },
 });

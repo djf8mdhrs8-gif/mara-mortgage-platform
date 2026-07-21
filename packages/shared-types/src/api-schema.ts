@@ -132,6 +132,22 @@ export interface paths {
         patch: operations["ApplicationsController_updateStatus_v1"];
         trace?: never;
     };
+    "/api/v1/calculators/amortization/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["CalculatorsController_exportPdf_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/health": {
         parameters: {
             query?: never;
@@ -201,6 +217,28 @@ export interface components {
         UpdateApplicationStatusDto: {
             /** @enum {string} */
             status: "DRAFT" | "SUBMITTED" | "PROCESSING" | "UNDERWRITING" | "CONDITIONALLY_APPROVED" | "CLEAR_TO_CLOSE" | "CLOSED" | "CANCELLED";
+        };
+        AmortizationPdfRequestDto: {
+            /**
+             * @description Loan amount in dollars
+             * @example 200000
+             */
+            principal: number;
+            /**
+             * @description Annual rate percentage
+             * @example 6.5
+             */
+            annualRatePct: number;
+            /**
+             * @description Term in months
+             * @example 360
+             */
+            termMonths: number;
+            /**
+             * @description Label shown on the PDF header
+             * @example 123 Main St
+             */
+            label?: string;
         };
         HealthResponseDto: {
             /** @enum {string} */
@@ -456,6 +494,28 @@ export interface operations {
             };
             /** @description Not found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CalculatorsController_exportPdf_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AmortizationPdfRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Amortization schedule as a PDF document */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };

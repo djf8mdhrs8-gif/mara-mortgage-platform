@@ -11,6 +11,7 @@ export default function CalculatorsLayout() {
       }}
     >
       <Stack.Screen name="basic" options={{ title: 'Mortgage Payment' }} />
+      <Stack.Screen name="amortization" options={{ title: 'Amortization Schedule' }} />
     </Stack>
   );
 }

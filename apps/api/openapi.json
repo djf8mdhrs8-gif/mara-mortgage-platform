@@ -298,6 +298,35 @@
         ]
       }
     },
+    "/api/v1/calculators/amortization/pdf": {
+      "post": {
+        "operationId": "CalculatorsController_exportPdf_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AmortizationPdfRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Amortization schedule as a PDF document"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "calculators"
+        ]
+      }
+    },
     "/api/v1/health": {
       "get": {
         "operationId": "HealthController_check_v1",
@@ -524,6 +553,36 @@
         },
         "required": [
           "status"
+        ]
+      },
+      "AmortizationPdfRequestDto": {
+        "type": "object",
+        "properties": {
+          "principal": {
+            "type": "number",
+            "description": "Loan amount in dollars",
+            "example": 200000
+          },
+          "annualRatePct": {
+            "type": "number",
+            "description": "Annual rate percentage",
+            "example": 6.5
+          },
+          "termMonths": {
+            "type": "number",
+            "description": "Term in months",
+            "example": 360
+          },
+          "label": {
+            "type": "string",
+            "description": "Label shown on the PDF header",
+            "example": "123 Main St"
+          }
+        },
+        "required": [
+          "principal",
+          "annualRatePct",
+          "termMonths"
         ]
       },
       "HealthResponseDto": {

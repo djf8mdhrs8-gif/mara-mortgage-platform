@@ -12,7 +12,16 @@ import { useAuthStore } from '@/features/auth/store';
  *   e.g. http://10.0.0.227:3001 — localhost on a phone points at the phone).
  * - localhost fallback for web preview and simulators.
  */
-const baseUrl = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001';
+export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001';
+const baseUrl = API_BASE_URL;
+
+/** Authenticated fetch for non-JSON responses (e.g. PDF downloads). */
+export async function fetchBinary(path: string, init?: RequestInit): Promise<Response> {
+  const token = useAuthStore.getState().accessToken;
+  const headers = new Headers(init?.headers);
+  if (token !== null) headers.set('Authorization', `Bearer ${token}`);
+  return fetch(`${API_BASE_URL}${path}`, { ...init, headers });
+}
 
 const authMiddleware: Middleware = {
   onRequest({ request }) {
