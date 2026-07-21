@@ -4,7 +4,10 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 
 import { useAuthStore } from '@/features/auth/store';
+import { useBiometricLock } from '@/features/auth/useBiometricLock';
+import { useLogout } from '@/features/auth/useAuth';
 import { useSessionRestore } from '@/features/auth/useSessionRestore';
+import { LockScreen } from '@/components/LockScreen';
 
 // Keep the native splash visible until session restore decides where we land —
 // a returning user must never see a login-screen flash.
@@ -28,22 +31,30 @@ function useAuthGate() {
   }, [status, user, segments, router]);
 }
 
+function LockedGate({ unlock }: { unlock: () => Promise<boolean> }) {
+  const logout = useLogout();
+  return <LockScreen onUnlock={() => void unlock()} onSignOut={() => logout.mutate()} />;
+}
+
 export default function RootLayout() {
   // useState (not module scope) so a QueryClient is never shared across
   // React refresh boundaries in dev.
   const [queryClient] = useState(() => new QueryClient());
   const status = useAuthStore((s) => s.status);
+  const { lock, unlock } = useBiometricLock();
 
   useSessionRestore();
   useAuthGate();
 
+  const booting = status === 'restoring' || lock === 'pending';
+
   useEffect(() => {
-    if (status === 'ready') {
+    if (!booting) {
       void SplashScreen.hideAsync().catch(() => undefined);
     }
-  }, [status]);
+  }, [booting]);
 
-  if (status === 'restoring') {
+  if (booting) {
     // Native: splash stays up. Web preview: brief blank frame instead of a flicker.
     return null;
   }
@@ -51,10 +62,14 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <StatusBar style="auto" />
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="(auth)" />
-      </Stack>
+      {lock === 'locked' ? (
+        <LockedGate unlock={unlock} />
+      ) : (
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="(auth)" />
+        </Stack>
+      )}
     </QueryClientProvider>
   );
 }
