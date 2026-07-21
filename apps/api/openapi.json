@@ -156,6 +156,148 @@
         ]
       }
     },
+    "/api/v1/applications": {
+      "post": {
+        "operationId": "ApplicationsController_create_v1",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "applications"
+        ]
+      },
+      "get": {
+        "operationId": "ApplicationsController_list_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ApplicationDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "applications"
+        ]
+      }
+    },
+    "/api/v1/applications/{id}": {
+      "get": {
+        "operationId": "ApplicationsController_getById_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found (or not yours)"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "applications"
+        ]
+      }
+    },
+    "/api/v1/applications/{id}/status": {
+      "patch": {
+        "operationId": "ApplicationsController_updateStatus_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateApplicationStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requires loan officer or admin role"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "applications"
+        ]
+      }
+    },
     "/api/v1/health": {
       "get": {
         "operationId": "HealthController_check_v1",
@@ -320,6 +462,68 @@
         },
         "required": [
           "refreshToken"
+        ]
+      },
+      "ApplicationDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "ariveLoanId": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "SUBMITTED",
+              "PROCESSING",
+              "UNDERWRITING",
+              "CONDITIONALLY_APPROVED",
+              "CLEAR_TO_CLOSE",
+              "CLOSED",
+              "CANCELLED"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "status",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "UpdateApplicationStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "SUBMITTED",
+              "PROCESSING",
+              "UNDERWRITING",
+              "CONDITIONALLY_APPROVED",
+              "CLEAR_TO_CLOSE",
+              "CLOSED",
+              "CANCELLED"
+            ]
+          }
+        },
+        "required": [
+          "status"
         ]
       },
       "HealthResponseDto": {

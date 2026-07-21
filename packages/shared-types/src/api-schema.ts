@@ -84,6 +84,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/applications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ApplicationsController_list_v1"];
+        put?: never;
+        post: operations["ApplicationsController_create_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/applications/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ApplicationsController_getById_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/applications/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["ApplicationsController_updateStatus_v1"];
+        trace?: never;
+    };
     "/api/v1/health": {
         parameters: {
             query?: never;
@@ -140,6 +188,19 @@ export interface components {
         };
         LogoutDto: {
             refreshToken: string;
+        };
+        ApplicationDto: {
+            id: string;
+            userId: string;
+            ariveLoanId?: string | null;
+            /** @enum {string} */
+            status: "DRAFT" | "SUBMITTED" | "PROCESSING" | "UNDERWRITING" | "CONDITIONALLY_APPROVED" | "CLEAR_TO_CLOSE" | "CLOSED" | "CANCELLED";
+            createdAt: string;
+            updatedAt: string;
+        };
+        UpdateApplicationStatusDto: {
+            /** @enum {string} */
+            status: "DRAFT" | "SUBMITTED" | "PROCESSING" | "UNDERWRITING" | "CONDITIONALLY_APPROVED" | "CLEAR_TO_CLOSE" | "CLOSED" | "CANCELLED";
         };
         HealthResponseDto: {
             /** @enum {string} */
@@ -290,6 +351,111 @@ export interface operations {
             };
             /** @description Missing or invalid bearer token */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ApplicationsController_list_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationDto"][];
+                };
+            };
+        };
+    };
+    ApplicationsController_create_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationDto"];
+                };
+            };
+        };
+    };
+    ApplicationsController_getById_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationDto"];
+                };
+            };
+            /** @description Not found (or not yours) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ApplicationsController_updateStatus_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateApplicationStatusDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationDto"];
+                };
+            };
+            /** @description Requires loan officer or admin role */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
