@@ -1,7 +1,14 @@
 /**
- * Framework-agnostic mortgage calculation engine. Empty scaffold for now —
- * amortization/extra-payment/refinance/affordability math lands starting at
- * Milestone 13, with correctness verified against known-good reference values
- * before any UI is wired to it.
+ * Framework-agnostic mortgage calculation engine. Pure functions, no
+ * dependencies — imported by both the API (authoritative recompute, PDFs)
+ * and the mobile app (instant on-device feedback). Correctness is enforced
+ * by cent-exact tests against independently computed reference schedules.
  */
-export {};
+export { toCents, fromCents, roundCents } from './money';
+export {
+  monthlyPayment,
+  buildAmortization,
+  type AmortizationParams,
+  type AmortizationEntry,
+  type AmortizationResult,
+} from './amortization';
