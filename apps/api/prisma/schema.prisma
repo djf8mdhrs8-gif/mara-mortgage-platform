@@ -196,6 +196,17 @@ model Article {
   @@map("articles")
 }
 
+// Small key-value store for admin-editable copy that isn't a full article:
+// compliance footer, disclosures, etc. Public-readable by design — this is
+// text that must appear before login (e.g. NMLS line on the sign-in screen).
+model ContentBlock {
+  key       String   @id
+  body      String
+  updatedAt DateTime @updatedAt
+
+  @@map("content_blocks")
+}
+
 model Notification {
   id     String             @id @default(cuid())
   userId String

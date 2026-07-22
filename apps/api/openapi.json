@@ -327,6 +327,85 @@
         ]
       }
     },
+    "/api/v1/content/{key}": {
+      "get": {
+        "operationId": "ContentController_get_v1",
+        "parameters": [
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentBlockDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown content key"
+          }
+        },
+        "tags": [
+          "content"
+        ]
+      },
+      "put": {
+        "operationId": "ContentController_upsert_v1",
+        "parameters": [
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpsertContentBlockDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentBlockDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Admin only"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "content"
+        ]
+      }
+    },
     "/api/v1/applications/{id}/documents": {
       "post": {
         "operationId": "DocumentsController_upload_v1",
@@ -935,6 +1014,37 @@
           "principal",
           "annualRatePct",
           "termMonths"
+        ]
+      },
+      "ContentBlockDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "example": "compliance.footer"
+          },
+          "body": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "body",
+          "updatedAt"
+        ]
+      },
+      "UpsertContentBlockDto": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "body"
         ]
       },
       "DocumentDto": {

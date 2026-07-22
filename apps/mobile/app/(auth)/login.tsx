@@ -6,6 +6,7 @@ import { z } from 'zod';
 
 import wordmark from '../../assets/branding/chl-wordmark-white.png';
 import { useLogin } from '@/features/auth/useAuth';
+import { useContentBlock } from '@/features/content/useContentBlock';
 import { FormTextInput } from '@/components/FormTextInput';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { colors, spacing, typography } from '@/theme/tokens';
@@ -19,6 +20,10 @@ type FormValues = z.infer<typeof schema>;
 
 export default function LoginScreen() {
   const login = useLogin();
+  const compliance = useContentBlock(
+    'compliance.footer',
+    'Certified Home Loans · NMLS #1806779 · Equal Housing Lender',
+  );
   const { control, handleSubmit } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: { email: '', password: '' },
@@ -71,6 +76,10 @@ export default function LoginScreen() {
             Create an account
           </Link>
         </Text>
+
+        <Text style={styles.compliance} testID="login-compliance">
+          {compliance.body}
+        </Text>
       </View>
     </KeyboardAvoidingView>
   );
@@ -119,5 +128,12 @@ const styles = StyleSheet.create({
   link: {
     color: colors.primary,
     fontWeight: '600',
+  },
+  compliance: {
+    ...typography.caption,
+    fontSize: 11,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginTop: spacing.lg,
   },
 });

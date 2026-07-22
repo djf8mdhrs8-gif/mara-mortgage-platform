@@ -129,7 +129,33 @@ const PROGRAMS = [
   },
 ];
 
+// Compliance copy: created if absent, NEVER overwritten on re-seed —
+// admins own this text once it exists. Placeholders are clearly marked
+// pending review by the license holder.
+const CONTENT_BLOCKS = [
+  {
+    key: 'compliance.footer',
+    body: 'Certified Home Loans · NMLS #1806779 · Equal Housing Lender',
+  },
+  {
+    key: 'compliance.disclosures',
+    body: P(
+      'Certified Home Loans · Company NMLS #1806779. Verify our licensing at nmlsconsumeraccess.org.',
+      'Equal Housing Lender. We do business in accordance with the Federal Fair Housing Act and the Equal Credit Opportunity Act.',
+      '[PLACEHOLDER — pending compliance review: list of states where licensed, individual originator NMLS numbers, and any state-specific disclosure text.]',
+      'All calculations in this app are estimates for planning purposes only and are not a loan offer, rate quote, or commitment to lend. Rates, programs, and guidelines change without notice. Contact us for a personalized quote.',
+    ),
+  },
+];
+
 const main = async () => {
+  for (const block of CONTENT_BLOCKS) {
+    await prisma.contentBlock.upsert({
+      where: { key: block.key },
+      create: block,
+      update: {},
+    });
+  }
   for (const program of PROGRAMS) {
     await prisma.loanProgram.upsert({
       where: { slug: program.slug },

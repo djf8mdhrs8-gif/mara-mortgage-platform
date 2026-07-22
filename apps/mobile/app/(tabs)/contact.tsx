@@ -1,3 +1,4 @@
+import { Link } from 'expo-router';
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { useAuthStore } from '@/features/auth/store';
@@ -99,7 +100,10 @@ export default function ContactScreen() {
       </View>
 
       <Text style={styles.footnote}>
-        {CONTACT.company} · NMLS details and disclosures arrive with Milestone 25.
+        {CONTACT.company} · NMLS #1806779 · Equal Housing Lender{'\n'}
+        <Link href="/legal" style={styles.legalLink} testID="contact-legal">
+          Licensing & disclosures
+        </Link>
       </Text>
     </ScrollView>
   );
@@ -198,5 +202,10 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
     marginTop: spacing.md,
+    lineHeight: 20,
+  },
+  legalLink: {
+    color: colors.primary,
+    fontWeight: '600',
   },
 });

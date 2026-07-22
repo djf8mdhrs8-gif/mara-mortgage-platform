@@ -148,6 +148,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/content/{key}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ContentController_get_v1"];
+        put: operations["ContentController_upsert_v1"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/applications/{id}/documents": {
         parameters: {
             query?: never;
@@ -343,6 +359,15 @@ export interface components {
             oneTimeAmount?: number;
             /** @description Payment number the one-time extra applies to */
             oneTimeMonth?: number;
+        };
+        ContentBlockDto: {
+            /** @example compliance.footer */
+            key: string;
+            body: string;
+            updatedAt: string;
+        };
+        UpsertContentBlockDto: {
+            body: string;
         };
         DocumentDto: {
             id: string;
@@ -677,6 +702,66 @@ export interface operations {
         responses: {
             /** @description Amortization schedule as a PDF document */
             200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ContentController_get_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContentBlockDto"];
+                };
+            };
+            /** @description Unknown content key */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ContentController_upsert_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpsertContentBlockDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContentBlockDto"];
+                };
+            };
+            /** @description Admin only */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };

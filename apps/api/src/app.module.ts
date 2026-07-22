@@ -5,6 +5,7 @@ import { LoggerModule } from 'nestjs-pino';
 import { ApplicationsModule } from './modules/applications/applications.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CalculatorsModule } from './modules/calculators/calculators.module';
+import { ContentModule } from './modules/content/content.module';
 import { DocumentsModule } from './modules/documents/documents.module';
 import { LoanProgramsModule } from './modules/loan-programs/loan-programs.module';
 import { StorageModule } from './storage/storage.module';
@@ -34,6 +35,7 @@ import { PrismaModule } from './prisma/prisma.module';
     StorageModule,
     ApplicationsModule,
     CalculatorsModule,
+    ContentModule,
     DocumentsModule,
     LoanProgramsModule,
     HealthModule,
