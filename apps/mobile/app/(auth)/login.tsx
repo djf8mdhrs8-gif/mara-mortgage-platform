@@ -1,9 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link } from 'expo-router';
 import { useForm } from 'react-hook-form';
-import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
+import { Image, KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
 import { z } from 'zod';
 
+import wordmark from '../../assets/branding/chl-wordmark-white.png';
 import { useLogin } from '@/features/auth/useAuth';
 import { FormTextInput } from '@/components/FormTextInput';
 import { PrimaryButton } from '@/components/PrimaryButton';
@@ -30,6 +31,14 @@ export default function LoginScreen() {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
+      <View style={styles.brandBanner}>
+        <Image
+          source={wordmark}
+          style={styles.brandLogo}
+          resizeMode="contain"
+          accessibilityLabel="Certified Home Loans"
+        />
+      </View>
       <View style={styles.form}>
         <Text style={styles.title}>Welcome back</Text>
         <Text style={styles.subtitle}>Sign in to continue your mortgage journey.</Text>
@@ -73,6 +82,17 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     justifyContent: 'center',
     padding: spacing.lg,
+  },
+  brandBanner: {
+    backgroundColor: colors.primary,
+    borderRadius: 12,
+    paddingVertical: spacing.lg,
+    alignItems: 'center',
+    marginBottom: spacing.xl,
+  },
+  brandLogo: {
+    width: 224,
+    height: 52,
   },
   form: {
     gap: spacing.md,

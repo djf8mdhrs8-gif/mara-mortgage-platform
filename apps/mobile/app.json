@@ -7,21 +7,35 @@
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "icon": "./assets/branding/icon.png",
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.maramortgage.app"
     },
     "android": {
       "package": "com.maramortgage.app",
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/branding/splash-check.png",
+        "backgroundColor": "#4B637D"
+      }
     },
     "web": {
-      "output": "static"
+      "output": "static",
+      "favicon": "./assets/branding/icon.png"
     },
     "plugins": [
       "expo-router",
       "expo-secure-store",
-      "expo-sharing"
+      "expo-sharing",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#4B637D",
+          "image": "./assets/branding/splash-check.png",
+          "imageWidth": 160
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
