@@ -4,6 +4,7 @@ import {
   StatusTimeline,
   type ApplicationStatus,
 } from '@/features/applications/StatusTimeline';
+import { DocumentsSection } from '@/features/documents/DocumentsSection';
 import { useApplications, useStartApplication } from '@/features/applications/useApplications';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { colors, radii, spacing, typography } from '@/theme/tokens';
@@ -57,6 +58,7 @@ export default function ApplicationScreen() {
             </Text>
           </View>
           <StatusTimeline status={latest.status as ApplicationStatus} />
+          <DocumentsSection applicationId={latest.id} />
           <Text style={styles.footnote}>
             Status updates appear here automatically as your loan progresses. Questions? Head to
             the Contact tab any time.
