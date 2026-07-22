@@ -7,6 +7,7 @@ import { useAuthStore } from '@/features/auth/store';
 import { useBiometricLock } from '@/features/auth/useBiometricLock';
 import { useLogout } from '@/features/auth/useAuth';
 import { useSessionRestore } from '@/features/auth/useSessionRestore';
+import { usePushRegistration } from '@/features/notifications/usePushRegistration';
 import { LockScreen } from '@/components/LockScreen';
 
 // Keep the native splash visible until session restore decides where we land —
@@ -45,6 +46,7 @@ export default function RootLayout() {
 
   useSessionRestore();
   useAuthGate();
+  usePushRegistration();
 
   const booting = status === 'restoring' || lock === 'pending';
 

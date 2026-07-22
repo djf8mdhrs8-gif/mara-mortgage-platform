@@ -260,6 +260,38 @@ export interface paths {
         patch: operations["LoanProgramsController_update_v1"];
         trace?: never;
     };
+    "/api/v1/notifications/token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["NotificationsController_registerToken_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["NotificationsController_sendTest_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/health": {
         parameters: {
             query?: never;
@@ -425,6 +457,28 @@ export interface components {
             sortOrder: number;
             /** @default false */
             published: boolean;
+        };
+        RegisterPushTokenDto: {
+            /** @example ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx] */
+            token: string;
+            /** @enum {string} */
+            platform: "ios" | "android";
+        };
+        SendTestNotificationDto: {
+            /** @example Hello from Mara Mortgage */
+            title: string;
+            /** @example Push plumbing works end to end. */
+            body: string;
+        };
+        SendResultDto: {
+            /** @description Notification row id recorded for this send */
+            notificationId: string;
+            /** @enum {string} */
+            status: "SENT" | "FAILED" | "PENDING";
+            /** @description Device tokens targeted */
+            deviceCount: number;
+            /** @description Per-device outcome detail (Expo ticket status/errors) */
+            detail: string;
         };
         HealthResponseDto: {
             /** @enum {string} */
@@ -1018,6 +1072,50 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    NotificationsController_registerToken_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterPushTokenDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationsController_sendTest_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendTestNotificationDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SendResultDto"];
+                };
             };
         };
     };

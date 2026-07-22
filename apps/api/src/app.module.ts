@@ -8,6 +8,7 @@ import { CalculatorsModule } from './modules/calculators/calculators.module';
 import { ContentModule } from './modules/content/content.module';
 import { DocumentsModule } from './modules/documents/documents.module';
 import { LoanProgramsModule } from './modules/loan-programs/loan-programs.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 import { StorageModule } from './storage/storage.module';
 import { HealthModule } from './modules/health/health.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -38,6 +39,7 @@ import { PrismaModule } from './prisma/prisma.module';
     ContentModule,
     DocumentsModule,
     LoanProgramsModule,
+    NotificationsModule,
     HealthModule,
   ],
 })

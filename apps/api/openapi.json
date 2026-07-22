@@ -742,6 +742,71 @@
         ]
       }
     },
+    "/api/v1/notifications/token": {
+      "post": {
+        "operationId": "NotificationsController_registerToken_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterPushTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/api/v1/notifications/test": {
+      "post": {
+        "operationId": "NotificationsController_sendTest_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendTestNotificationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SendResultDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
     "/api/v1/health": {
       "get": {
         "operationId": "HealthController_check_v1",
@@ -1208,6 +1273,74 @@
             "default": false
           }
         }
+      },
+      "RegisterPushTokenDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "example": "ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]"
+          },
+          "platform": {
+            "type": "string",
+            "enum": [
+              "ios",
+              "android"
+            ]
+          }
+        },
+        "required": [
+          "token",
+          "platform"
+        ]
+      },
+      "SendTestNotificationDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Hello from Mara Mortgage"
+          },
+          "body": {
+            "type": "string",
+            "example": "Push plumbing works end to end."
+          }
+        },
+        "required": [
+          "title",
+          "body"
+        ]
+      },
+      "SendResultDto": {
+        "type": "object",
+        "properties": {
+          "notificationId": {
+            "type": "string",
+            "description": "Notification row id recorded for this send"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "SENT",
+              "FAILED",
+              "PENDING"
+            ]
+          },
+          "deviceCount": {
+            "type": "number",
+            "description": "Device tokens targeted"
+          },
+          "detail": {
+            "type": "string",
+            "description": "Per-device outcome detail (Expo ticket status/errors)"
+          }
+        },
+        "required": [
+          "notificationId",
+          "status",
+          "deviceCount",
+          "detail"
+        ]
       },
       "HealthResponseDto": {
         "type": "object",
