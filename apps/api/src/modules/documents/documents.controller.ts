@@ -1,8 +1,10 @@
 import {
   BadRequestException,
+  Body,
   Controller,
   Get,
   Param,
+  Patch,
   Post,
   Res,
   UploadedFile,
@@ -15,21 +17,24 @@ import {
   ApiBody,
   ApiConsumes,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import type { Response } from 'express';
 
-import { DocumentDto } from './documents.dto';
+import { DocumentDto, UpdateDocumentStatusDto } from './documents.dto';
 import { DocumentsService } from './documents.service';
 import { AccessTokenPayload } from '../auth/auth.service';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Roles } from '../auth/roles.decorator';
+import { RolesGuard } from '../auth/roles.guard';
 
 @ApiTags('documents')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller()
 export class DocumentsController {
   constructor(private readonly documents: DocumentsService) {}
@@ -65,6 +70,18 @@ export class DocumentsController {
     @CurrentUser() user: AccessTokenPayload,
   ): Promise<DocumentDto[]> {
     return this.documents.list(applicationId, user);
+  }
+
+  @Patch('documents/:id/status')
+  @Roles('LOAN_OFFICER', 'ADMIN')
+  @ApiOkResponse({ type: DocumentDto })
+  @ApiForbiddenResponse({ description: 'Requires loan officer or admin role' })
+  @ApiNotFoundResponse({ description: 'Document not found' })
+  updateStatus(
+    @Param('id') documentId: string,
+    @Body() dto: UpdateDocumentStatusDto,
+  ): Promise<DocumentDto> {
+    return this.documents.updateStatus(documentId, dto.status);
   }
 
   @Get('documents/:id/download')

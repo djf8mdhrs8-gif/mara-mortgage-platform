@@ -423,6 +423,57 @@
         ]
       }
     },
+    "/api/v1/documents/{id}/status": {
+      "patch": {
+        "operationId": "DocumentsController_updateStatus_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDocumentStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requires loan officer or admin role"
+          },
+          "404": {
+            "description": "Document not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "documents"
+        ]
+      }
+    },
     "/api/v1/documents/{id}/download": {
       "get": {
         "operationId": "DocumentsController_download_v1",
@@ -767,6 +818,23 @@
           "sizeBytes",
           "status",
           "createdAt"
+        ]
+      },
+      "UpdateDocumentStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "UPLOADED",
+              "IN_REVIEW",
+              "ACCEPTED",
+              "NEEDS_RESUBMISSION"
+            ]
+          }
+        },
+        "required": [
+          "status"
         ]
       },
       "HealthResponseDto": {

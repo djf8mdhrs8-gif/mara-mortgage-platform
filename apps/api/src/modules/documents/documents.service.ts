@@ -100,6 +100,19 @@ export class DocumentsService {
     return docs.map(toDto);
   }
 
+  /** Staff-only at the controller layer (@Roles); 404 on unknown ids. */
+  async updateStatus(documentId: string, status: Document['status']): Promise<DocumentDto> {
+    const doc = await this.prisma.document.findUnique({ where: { id: documentId } });
+    if (doc === null) {
+      throw new NotFoundException('document not found');
+    }
+    const updated = await this.prisma.document.update({
+      where: { id: documentId },
+      data: { status },
+    });
+    return toDto(updated);
+  }
+
   async openDownload(
     documentId: string,
     payload: AccessTokenPayload,

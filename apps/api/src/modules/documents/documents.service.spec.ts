@@ -19,7 +19,7 @@ interface DocRow {
   storageKey: string;
   mimeType: string;
   sizeBytes: number;
-  status: 'UPLOADED';
+  status: 'UPLOADED' | 'IN_REVIEW' | 'ACCEPTED' | 'NEEDS_RESUBMISSION';
   createdAt: Date;
   updatedAt: Date;
 }
@@ -57,6 +57,14 @@ function makeFakes() {
         if (doc === undefined) return Promise.resolve(null);
         if (include?.application === true) {
           return Promise.resolve({ ...doc, application: apps.find((a) => a.id === doc.applicationId) });
+        }
+        return Promise.resolve(doc);
+      },
+      update: ({ where, data }: { where: { id: string }; data: { status: DocRow['status'] } }) => {
+        const doc = docs.find((d) => d.id === where.id);
+        if (doc !== undefined) {
+          doc.status = data.status;
+          doc.updatedAt = new Date();
         }
         return Promise.resolve(doc);
       },
@@ -137,6 +145,19 @@ describe('DocumentsService', () => {
     await expect(
       service.upload('app_a', borrowerA, { ...pdf(), mimetype: 'application/x-msdownload' }),
     ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('updateStatus changes the review state and 404s on unknown ids', async () => {
+    const doc = await service.upload('app_a', borrowerA, pdf());
+    const updated = await service.updateStatus(doc.id, 'NEEDS_RESUBMISSION');
+    expect(updated.status).toBe('NEEDS_RESUBMISSION');
+
+    const list = await service.list('app_a', borrowerA);
+    expect(list[0]?.status).toBe('NEEDS_RESUBMISSION');
+
+    await expect(service.updateStatus('doc_missing', 'ACCEPTED')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
   });
 
   it('sanitizes hostile filenames but keeps the storage key server-generated', async () => {

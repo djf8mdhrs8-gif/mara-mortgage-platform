@@ -164,6 +164,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/documents/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["DocumentsController_updateStatus_v1"];
+        trace?: never;
+    };
     "/api/v1/documents/{id}/download": {
         parameters: {
             query?: never;
@@ -289,6 +305,10 @@ export interface components {
             /** @enum {string} */
             status: "UPLOADED" | "IN_REVIEW" | "ACCEPTED" | "NEEDS_RESUBMISSION";
             createdAt: string;
+        };
+        UpdateDocumentStatusDto: {
+            /** @enum {string} */
+            status: "UPLOADED" | "IN_REVIEW" | "ACCEPTED" | "NEEDS_RESUBMISSION";
         };
         HealthResponseDto: {
             /** @enum {string} */
@@ -628,6 +648,45 @@ export interface operations {
                 };
             };
             /** @description Application not found (or not yours) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    DocumentsController_updateStatus_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateDocumentStatusDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentDto"];
+                };
+            };
+            /** @description Requires loan officer or admin role */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Document not found */
             404: {
                 headers: {
                     [name: string]: unknown;

@@ -49,6 +49,11 @@ export function DocumentsSection({ applicationId }: { applicationId: string }) {
                     day: 'numeric',
                   })}
                 </Text>
+                {doc.status === 'NEEDS_RESUBMISSION' ? (
+                  <Text style={styles.resubmitHint}>
+                    Please upload a new copy — the previous one couldn’t be used.
+                  </Text>
+                ) : null}
               </View>
               <Text style={[styles.docStatus, { color: status?.color ?? colors.textSecondary }]}>
                 {status?.label ?? doc.status}
@@ -112,5 +117,9 @@ const styles = StyleSheet.create({
   docStatus: {
     ...typography.caption,
     fontWeight: '700',
+  },
+  resubmitHint: {
+    ...typography.caption,
+    color: colors.error,
   },
 });

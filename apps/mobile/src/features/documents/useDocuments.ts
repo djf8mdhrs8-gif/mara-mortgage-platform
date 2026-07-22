@@ -16,6 +16,9 @@ export function useDocuments(applicationId: string | undefined) {
       }
       return data;
     },
+    // Review-status changes come from the loan-officer side; poll so chips
+    // update without the borrower doing anything.
+    refetchInterval: 30_000,
   });
 }
 
