@@ -505,6 +505,164 @@
         ]
       }
     },
+    "/api/v1/loan-programs": {
+      "get": {
+        "operationId": "LoanProgramsController_list_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LoanProgramDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "loan-programs"
+        ]
+      },
+      "post": {
+        "operationId": "LoanProgramsController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLoanProgramDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoanProgramDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Admin only"
+          },
+          "409": {
+            "description": "Slug already exists"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "loan-programs"
+        ]
+      }
+    },
+    "/api/v1/loan-programs/{slug}": {
+      "get": {
+        "operationId": "LoanProgramsController_getBySlug_v1",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoanProgramDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown or unpublished program"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "loan-programs"
+        ]
+      }
+    },
+    "/api/v1/loan-programs/{id}": {
+      "patch": {
+        "operationId": "LoanProgramsController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLoanProgramDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoanProgramDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Admin only"
+          },
+          "404": {
+            "description": "Unknown program"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "loan-programs"
+        ]
+      }
+    },
     "/api/v1/health": {
       "get": {
         "operationId": "HealthController_check_v1",
@@ -836,6 +994,110 @@
         "required": [
           "status"
         ]
+      },
+      "LoanProgramDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string",
+            "description": "Long-form body; paragraphs separated by blank lines"
+          },
+          "sortOrder": {
+            "type": "number"
+          },
+          "published": {
+            "type": "boolean"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "title",
+          "summary",
+          "content",
+          "sortOrder",
+          "published",
+          "updatedAt"
+        ]
+      },
+      "CreateLoanProgramDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "example": "fha",
+            "description": "URL-safe identifier"
+          },
+          "title": {
+            "type": "string",
+            "example": "FHA Loans"
+          },
+          "summary": {
+            "type": "string",
+            "example": "Flexible credit requirements with as little as 3.5% down."
+          },
+          "content": {
+            "type": "string"
+          },
+          "sortOrder": {
+            "type": "number",
+            "default": 0
+          },
+          "published": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": [
+          "slug",
+          "title",
+          "summary",
+          "content"
+        ]
+      },
+      "UpdateLoanProgramDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "example": "fha",
+            "description": "URL-safe identifier"
+          },
+          "title": {
+            "type": "string",
+            "example": "FHA Loans"
+          },
+          "summary": {
+            "type": "string",
+            "example": "Flexible credit requirements with as little as 3.5% down."
+          },
+          "content": {
+            "type": "string"
+          },
+          "sortOrder": {
+            "type": "number",
+            "default": 0
+          },
+          "published": {
+            "type": "boolean",
+            "default": false
+          }
+        }
       },
       "HealthResponseDto": {
         "type": "object",

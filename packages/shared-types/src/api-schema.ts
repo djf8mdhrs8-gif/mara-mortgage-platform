@@ -196,6 +196,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/loan-programs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["LoanProgramsController_list_v1"];
+        put?: never;
+        post: operations["LoanProgramsController_create_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/loan-programs/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["LoanProgramsController_getBySlug_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/loan-programs/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["LoanProgramsController_update_v1"];
+        trace?: never;
+    };
     "/api/v1/health": {
         parameters: {
             query?: never;
@@ -309,6 +357,49 @@ export interface components {
         UpdateDocumentStatusDto: {
             /** @enum {string} */
             status: "UPLOADED" | "IN_REVIEW" | "ACCEPTED" | "NEEDS_RESUBMISSION";
+        };
+        LoanProgramDto: {
+            id: string;
+            slug: string;
+            title: string;
+            summary: string;
+            /** @description Long-form body; paragraphs separated by blank lines */
+            content: string;
+            sortOrder: number;
+            published: boolean;
+            updatedAt: string;
+        };
+        CreateLoanProgramDto: {
+            /**
+             * @description URL-safe identifier
+             * @example fha
+             */
+            slug: string;
+            /** @example FHA Loans */
+            title: string;
+            /** @example Flexible credit requirements with as little as 3.5% down. */
+            summary: string;
+            content: string;
+            /** @default 0 */
+            sortOrder: number;
+            /** @default false */
+            published: boolean;
+        };
+        UpdateLoanProgramDto: {
+            /**
+             * @description URL-safe identifier
+             * @example fha
+             */
+            slug?: string;
+            /** @example FHA Loans */
+            title?: string;
+            /** @example Flexible credit requirements with as little as 3.5% down. */
+            summary?: string;
+            content?: string;
+            /** @default 0 */
+            sortOrder: number;
+            /** @default false */
+            published: boolean;
         };
         HealthResponseDto: {
             /** @enum {string} */
@@ -714,6 +805,129 @@ export interface operations {
                 content?: never;
             };
             /** @description Document not found (or not yours) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    LoanProgramsController_list_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoanProgramDto"][];
+                };
+            };
+        };
+    };
+    LoanProgramsController_create_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateLoanProgramDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoanProgramDto"];
+                };
+            };
+            /** @description Admin only */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Slug already exists */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    LoanProgramsController_getBySlug_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoanProgramDto"];
+                };
+            };
+            /** @description Unknown or unpublished program */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    LoanProgramsController_update_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateLoanProgramDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoanProgramDto"];
+                };
+            };
+            /** @description Admin only */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unknown program */
             404: {
                 headers: {
                     [name: string]: unknown;
