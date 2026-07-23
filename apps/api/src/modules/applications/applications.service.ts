@@ -1,9 +1,21 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import type { Application } from '@prisma/client';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import type { Application, ApplicationStatus } from '@prisma/client';
 
 import type { AccessTokenPayload } from '../auth/auth.service';
 import { ApplicationDto } from './applications.dto';
+import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../../prisma/prisma.service';
+
+/** Borrower-facing copy for each milestone push. DRAFT is the borrower's own action — no push. */
+const MILESTONE_MESSAGES: Partial<Record<ApplicationStatus, string>> = {
+  SUBMITTED: 'Your application has been submitted. We’re on it!',
+  PROCESSING: 'Your documents are being collected and verified.',
+  UNDERWRITING: 'An underwriter is now reviewing your file.',
+  CONDITIONALLY_APPROVED: 'Great news — you’re conditionally approved!',
+  CLEAR_TO_CLOSE: 'You’re clear to close! Closing is being scheduled.',
+  CLOSED: 'Congratulations — your loan has closed! 🎉',
+  CANCELLED: 'Your application has been cancelled. Reach out any time to restart.',
+};
 
 const STAFF_ROLES = ['LOAN_OFFICER', 'ADMIN'] as const;
 
@@ -24,7 +36,12 @@ function toDto(app: Application): ApplicationDto {
 
 @Injectable()
 export class ApplicationsService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(ApplicationsService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   async create(payload: AccessTokenPayload): Promise<ApplicationDto> {
     const app = await this.prisma.application.create({ data: { userId: payload.sub } });
@@ -58,6 +75,22 @@ export class ApplicationsService {
       throw new NotFoundException('application not found');
     }
     const updated = await this.prisma.application.update({ where: { id }, data: { status } });
+
+    // Milestone push to the borrower — best-effort: a notification failure
+    // must never fail the status change itself.
+    const message = MILESTONE_MESSAGES[status];
+    if (status !== app.status && message !== undefined) {
+      try {
+        await this.notifications.sendToUser(app.userId, {
+          type: 'LOAN_MILESTONE',
+          title: 'Loan update',
+          body: message,
+        });
+      } catch (error) {
+        this.logger.warn({ err: error, applicationId: id }, 'milestone notification failed');
+      }
+    }
+
     return toDto(updated);
   }
 }

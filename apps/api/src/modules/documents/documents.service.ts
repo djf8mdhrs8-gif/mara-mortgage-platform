@@ -4,12 +4,14 @@ import type { Readable } from 'node:stream';
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import type { Document } from '@prisma/client';
 
 import type { AccessTokenPayload } from '../auth/auth.service';
 import { DocumentDto } from './documents.dto';
+import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { StorageService } from '../../storage/storage.service';
 
@@ -43,10 +45,22 @@ function toDto(doc: Document): DocumentDto {
 
 @Injectable()
 export class DocumentsService {
+  private readonly logger = new Logger(DocumentsService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
+    private readonly notifications: NotificationsService,
   ) {}
+
+  /** Best-effort notification — never lets a push failure break the mutation. */
+  private async notify(action: () => Promise<unknown>): Promise<void> {
+    try {
+      await action();
+    } catch (error) {
+      this.logger.warn({ err: error }, 'document notification failed');
+    }
+  }
 
   /** 404 (not 403) when the application isn't visible to this user — no existence oracle. */
   private async requireVisibleApplication(
@@ -88,6 +102,19 @@ export class DocumentsService {
         sizeBytes: file.size,
       },
     });
+
+    // Heads-up to the loan team (not to the uploader themselves).
+    await this.notify(() =>
+      this.notifications.sendToStaff(
+        {
+          type: 'GENERAL',
+          title: 'New document uploaded',
+          body: `${fileName} was uploaded and is ready for review.`,
+        },
+        payload.sub,
+      ),
+    );
+
     return toDto(doc);
   }
 
@@ -102,7 +129,10 @@ export class DocumentsService {
 
   /** Staff-only at the controller layer (@Roles); 404 on unknown ids. */
   async updateStatus(documentId: string, status: Document['status']): Promise<DocumentDto> {
-    const doc = await this.prisma.document.findUnique({ where: { id: documentId } });
+    const doc = await this.prisma.document.findUnique({
+      where: { id: documentId },
+      include: { application: true },
+    });
     if (doc === null) {
       throw new NotFoundException('document not found');
     }
@@ -110,6 +140,18 @@ export class DocumentsService {
       where: { id: documentId },
       data: { status },
     });
+
+    // Document reminder to the borrower when action is needed.
+    if (status === 'NEEDS_RESUBMISSION' && doc.status !== 'NEEDS_RESUBMISSION') {
+      await this.notify(() =>
+        this.notifications.sendToUser(doc.application.userId, {
+          type: 'DOCUMENT_REMINDER',
+          title: 'Action needed on a document',
+          body: `Please upload a new copy of ${doc.fileName} — the previous one couldn’t be used.`,
+        }),
+      );
+    }
+
     return toDto(updated);
   }
 

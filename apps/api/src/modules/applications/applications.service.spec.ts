@@ -3,6 +3,7 @@ import type { ApplicationStatus } from '@prisma/client';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { ApplicationsService } from './applications.service';
+import type { NotificationsService } from '../notifications/notifications.service';
 import type { AccessTokenPayload } from '../auth/auth.service';
 import type { PrismaService } from '../../prisma/prisma.service';
 
@@ -37,8 +38,12 @@ function makeFakePrisma() {
         Promise.resolve(
           where?.userId === undefined ? [...apps] : apps.filter((a) => a.userId === where.userId),
         ),
-      findUnique: ({ where }: { where: { id: string } }) =>
-        Promise.resolve(apps.find((a) => a.id === where.id) ?? null),
+      // Return a snapshot, like real Prisma — a shared reference would let the
+      // service's "did it change" comparison see its own mutation.
+      findUnique: ({ where }: { where: { id: string } }) => {
+        const row = apps.find((a) => a.id === where.id);
+        return Promise.resolve(row === undefined ? null : { ...row });
+      },
       update: ({ where, data }: { where: { id: string }; data: { status: ApplicationStatus } }) => {
         const row = apps.find((a) => a.id === where.id);
         if (row !== undefined) {
@@ -53,15 +58,29 @@ function makeFakePrisma() {
   return prisma as unknown as PrismaService;
 }
 
+function makeFakeNotifications() {
+  const sent: { userId: string; type: string; body: string }[] = [];
+  const service = {
+    sendToUser: (userId: string, input: { type: string; body: string }) => {
+      sent.push({ userId, type: input.type, body: input.body });
+      return Promise.resolve({ notificationId: 'n', status: 'SENT', deviceCount: 1, detail: 'ok' });
+    },
+    sendToStaff: () => Promise.resolve(),
+  } as unknown as NotificationsService;
+  return { service, sent };
+}
+
 const borrowerA: AccessTokenPayload = { sub: 'user_a', role: 'BORROWER' };
 const borrowerB: AccessTokenPayload = { sub: 'user_b', role: 'BORROWER' };
 const loanOfficer: AccessTokenPayload = { sub: 'user_lo', role: 'LOAN_OFFICER' };
 
 describe('ApplicationsService', () => {
   let service: ApplicationsService;
+  let notifications: ReturnType<typeof makeFakeNotifications>;
 
   beforeEach(() => {
-    service = new ApplicationsService(makeFakePrisma());
+    notifications = makeFakeNotifications();
+    service = new ApplicationsService(makeFakePrisma(), notifications.service);
   });
 
   it("borrowers only see their own applications in list()", async () => {
@@ -91,6 +110,19 @@ describe('ApplicationsService', () => {
 
     await expect(service.getById(aApp.id, loanOfficer)).resolves.toMatchObject({ id: aApp.id });
     await expect(service.list(loanOfficer)).resolves.toHaveLength(2);
+  });
+
+  it('status changes push a LOAN_MILESTONE notification to the owner (but not for no-op changes)', async () => {
+    const app = await service.create(borrowerA);
+
+    await service.updateStatus(app.id, 'UNDERWRITING');
+    expect(notifications.sent).toHaveLength(1);
+    expect(notifications.sent[0]).toMatchObject({ userId: 'user_a', type: 'LOAN_MILESTONE' });
+    expect(notifications.sent[0]?.body).toContain('underwriter');
+
+    // Same status again -> no duplicate push
+    await service.updateStatus(app.id, 'UNDERWRITING');
+    expect(notifications.sent).toHaveLength(1);
   });
 
   it('updateStatus 404s on unknown ids', async () => {

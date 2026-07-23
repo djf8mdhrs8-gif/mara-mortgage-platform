@@ -5,6 +5,7 @@ import { DocumentsService } from './documents.service';
 import type { AccessTokenPayload } from '../auth/auth.service';
 import type { PrismaService } from '../../prisma/prisma.service';
 import type { StorageService } from '../../storage/storage.service';
+import type { NotificationsService } from '../notifications/notifications.service';
 
 interface AppRow {
   id: string;
@@ -58,7 +59,7 @@ function makeFakes() {
         if (include?.application === true) {
           return Promise.resolve({ ...doc, application: apps.find((a) => a.id === doc.applicationId) });
         }
-        return Promise.resolve(doc);
+        return Promise.resolve({ ...doc });
       },
       update: ({ where, data }: { where: { id: string }; data: { status: DocRow['status'] } }) => {
         const doc = docs.find((d) => d.id === where.id);
@@ -80,7 +81,19 @@ function makeFakes() {
     size: (key: string) => Promise.resolve(stored.get(key)?.length ?? 0),
   } as unknown as StorageService;
 
-  return { prisma, storage, stored };
+  const notified: { kind: string; userId?: string; type?: string; body?: string }[] = [];
+  const notifications = {
+    sendToUser: (userId: string, input: { type: string; body: string }) => {
+      notified.push({ kind: 'user', userId, type: input.type, body: input.body });
+      return Promise.resolve({ notificationId: 'n', status: 'SENT', deviceCount: 1, detail: 'ok' });
+    },
+    sendToStaff: (input: { type: string; body: string }) => {
+      notified.push({ kind: 'staff', type: input.type, body: input.body });
+      return Promise.resolve();
+    },
+  } as unknown as NotificationsService;
+
+  return { prisma, storage, stored, notifications, notified };
 }
 
 const borrowerA: AccessTokenPayload = { sub: 'user_a', role: 'BORROWER' };
@@ -97,11 +110,13 @@ const pdf = (name = 'bank-statement.pdf') => ({
 describe('DocumentsService', () => {
   let service: DocumentsService;
   let stored: Map<string, Buffer>;
+  let notified: { kind: string; userId?: string; type?: string; body?: string }[];
 
   beforeEach(() => {
     const fakes = makeFakes();
     stored = fakes.stored;
-    service = new DocumentsService(fakes.prisma, fakes.storage);
+    notified = fakes.notified;
+    service = new DocumentsService(fakes.prisma, fakes.storage, fakes.notifications);
   });
 
   it('uploads and lists a document for the owning borrower', async () => {
@@ -158,6 +173,21 @@ describe('DocumentsService', () => {
     await expect(service.updateStatus('doc_missing', 'ACCEPTED')).rejects.toBeInstanceOf(
       NotFoundException,
     );
+  });
+
+  it('uploads notify staff; NEEDS_RESUBMISSION notifies the owning borrower once', async () => {
+    const doc = await service.upload('app_a', borrowerA, pdf());
+    expect(notified.filter((n) => n.kind === 'staff')).toHaveLength(1);
+    expect(notified[0]?.body).toContain('bank-statement.pdf');
+
+    await service.updateStatus(doc.id, 'NEEDS_RESUBMISSION');
+    const reminders = notified.filter((n) => n.kind === 'user');
+    expect(reminders).toHaveLength(1);
+    expect(reminders[0]).toMatchObject({ userId: 'user_a', type: 'DOCUMENT_REMINDER' });
+
+    // Already NEEDS_RESUBMISSION -> no duplicate reminder
+    await service.updateStatus(doc.id, 'NEEDS_RESUBMISSION');
+    expect(notified.filter((n) => n.kind === 'user')).toHaveLength(1);
   });
 
   it('sanitizes hostile filenames but keeps the storage key server-generated', async () => {

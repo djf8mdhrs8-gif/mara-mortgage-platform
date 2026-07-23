@@ -23,6 +23,20 @@ export class NotificationsService {
     });
   }
 
+  /** Notifies every staff account (loan officers + admins), except `excludeUserId`. */
+  async sendToStaff(
+    input: { type: NotificationType; title: string; body: string },
+    excludeUserId?: string,
+  ): Promise<void> {
+    const staff = await this.prisma.user.findMany({
+      where: { role: { in: ['LOAN_OFFICER', 'ADMIN'] } },
+    });
+    for (const member of staff) {
+      if (member.id === excludeUserId) continue;
+      await this.sendToUser(member.id, input);
+    }
+  }
+
   /**
    * Records a Notification row, then attempts delivery to every registered
    * device. The row is the source of truth for history; delivery status is
