@@ -34,6 +34,12 @@ const CALCULATORS = [
     description: 'Project your wealth over time on each path — with break-even year',
     ready: true,
   },
+  {
+    href: '/calculators/buydown',
+    title: 'Rate Buydown',
+    description: '2-1 and 3-2-1 temporary buydowns, or permanent discount points',
+    ready: true,
+  },
 ] as const;
 
 export default function CalculatorsScreen() {

@@ -16,6 +16,7 @@ export default function CalculatorsLayout() {
       <Stack.Screen name="refinance" options={{ title: 'Refinance' }} />
       <Stack.Screen name="affordability" options={{ title: 'Affordability' }} />
       <Stack.Screen name="rent-vs-buy" options={{ title: 'Rent vs. Buy' }} />
+      <Stack.Screen name="buydown" options={{ title: 'Rate Buydown' }} />
     </Stack>
   );
 }

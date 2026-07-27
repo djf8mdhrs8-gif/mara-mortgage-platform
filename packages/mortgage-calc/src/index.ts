@@ -38,3 +38,13 @@ export {
   type RentVsBuyYear,
   type RentVsBuyResult,
 } from './rent-vs-buy';
+export {
+  calculateTemporaryBuydown,
+  calculatePermanentBuydown,
+  type TemporaryBuydownType,
+  type TemporaryBuydownInputs,
+  type TemporaryBuydownResult,
+  type BuydownYearRow,
+  type PermanentBuydownInputs,
+  type PermanentBuydownResult,
+} from './buydown';
