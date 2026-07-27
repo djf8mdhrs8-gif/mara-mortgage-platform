@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { Image, KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
 import { z } from 'zod';
 
-import wordmark from '../../assets/branding/chl-wordmark-white.png';
+import logo from '../../assets/branding/mara-logo.png';
 import { useLogin } from '@/features/auth/useAuth';
 import { useContentBlock } from '@/features/content/useContentBlock';
 import { FormTextInput } from '@/components/FormTextInput';
@@ -38,10 +38,10 @@ export default function LoginScreen() {
     >
       <View style={styles.brandBanner}>
         <Image
-          source={wordmark}
+          source={logo}
           style={styles.brandLogo}
           resizeMode="contain"
-          accessibilityLabel="Certified Home Loans"
+          accessibilityLabel="Mara Mortgage Solutions"
         />
       </View>
       <View style={styles.form}>
@@ -93,15 +93,12 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   brandBanner: {
-    backgroundColor: colors.primary,
-    borderRadius: 12,
-    paddingVertical: spacing.lg,
     alignItems: 'center',
-    marginBottom: spacing.xl,
+    marginBottom: spacing.lg,
   },
   brandLogo: {
-    width: 224,
-    height: 52,
+    width: 210,
+    height: 168,
   },
   form: {
     gap: spacing.md,

@@ -1,6 +1,6 @@
 import { Image, StyleSheet, Text, View } from 'react-native';
 
-import wordmark from '../../assets/branding/chl-wordmark-white.png';
+import logo from '../../assets/branding/mara-logo.png';
 import { PrimaryButton } from './PrimaryButton';
 import { colors, spacing, typography } from '@/theme/tokens';
 
@@ -13,12 +13,14 @@ interface LockScreenProps {
 export function LockScreen({ onUnlock, onSignOut }: LockScreenProps) {
   return (
     <View style={styles.container}>
-      <Image
-        source={wordmark}
-        style={styles.logo}
-        resizeMode="contain"
-        accessibilityLabel="Certified Home Loans"
-      />
+      <View style={styles.logoCard}>
+        <Image
+          source={logo}
+          style={styles.logo}
+          resizeMode="contain"
+          accessibilityLabel="Mara Mortgage Solutions"
+        />
+      </View>
       <Text style={styles.subtitle}>Unlock with Face ID / fingerprint to continue.</Text>
       <View style={styles.actions}>
         <PrimaryButton title="Unlock" onPress={onUnlock} />
@@ -39,9 +41,14 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     gap: spacing.sm,
   },
+  logoCard: {
+    backgroundColor: colors.background,
+    borderRadius: 16,
+    padding: spacing.md,
+  },
   logo: {
-    width: 224,
-    height: 52,
+    width: 170,
+    height: 136,
   },
   subtitle: {
     ...typography.body,

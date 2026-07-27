@@ -16,8 +16,8 @@
       "package": "com.maramortgage.app",
       "edgeToEdgeEnabled": true,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/branding/splash-check.png",
-        "backgroundColor": "#4B637D"
+        "foregroundImage": "./assets/branding/icon.png",
+        "backgroundColor": "#FFFFFF"
       }
     },
     "web": {
@@ -31,9 +31,9 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#4B637D",
-          "image": "./assets/branding/splash-check.png",
-          "imageWidth": 160
+          "backgroundColor": "#FFFFFF",
+          "image": "./assets/branding/splash-logo.png",
+          "imageWidth": 220
         }
       ]
     ],

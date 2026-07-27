@@ -31,10 +31,10 @@ export default function LoginPage() {
       <form onSubmit={(e) => void onSubmit(e)} style={styles.card}>
         <div style={styles.banner}>
           <Image
-            src="/chl-wordmark-white.png"
-            alt="Certified Home Loans"
-            width={224}
-            height={52}
+            src="/mara-logo.png"
+            alt="Mara Mortgage Solutions"
+            width={200}
+            height={160}
             priority
           />
         </div>
@@ -97,9 +97,8 @@ const styles: Record<string, React.CSSProperties> = {
     gap: 14,
   },
   banner: {
-    background: '#0F2A4A',
     borderRadius: 8,
-    padding: '18px 12px',
+    padding: '6px 12px',
     display: 'flex',
     justifyContent: 'center',
   },
