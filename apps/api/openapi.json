@@ -298,6 +298,45 @@
         ]
       }
     },
+    "/api/v1/notifications/broadcast": {
+      "post": {
+        "operationId": "NotificationsController_broadcast_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BroadcastDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BroadcastResultDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Admin only"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
     "/api/v1/notifications/token": {
       "post": {
         "operationId": "NotificationsController_registerToken_v1",
@@ -1191,6 +1230,63 @@
         },
         "required": [
           "status"
+        ]
+      },
+      "BroadcastDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Rates just dropped"
+          },
+          "body": {
+            "type": "string",
+            "example": "30-year rates fell this week — a great time to run your numbers."
+          },
+          "audience": {
+            "type": "string",
+            "enum": [
+              "ALL",
+              "BORROWERS",
+              "REALTORS"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "GENERAL",
+              "RATE_UPDATE",
+              "EDUCATIONAL"
+            ],
+            "default": "GENERAL"
+          }
+        },
+        "required": [
+          "title",
+          "body",
+          "audience"
+        ]
+      },
+      "BroadcastResultDto": {
+        "type": "object",
+        "properties": {
+          "recipients": {
+            "type": "number",
+            "description": "Users targeted by the audience filter"
+          },
+          "delivered": {
+            "type": "number",
+            "description": "Users with at least one device that accepted delivery"
+          },
+          "undelivered": {
+            "type": "number",
+            "description": "Users recorded but with no successful device delivery yet"
+          }
+        },
+        "required": [
+          "recipients",
+          "delivered",
+          "undelivered"
         ]
       },
       "RegisterPushTokenDto": {

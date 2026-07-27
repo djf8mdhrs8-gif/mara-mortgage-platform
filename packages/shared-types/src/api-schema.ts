@@ -132,6 +132,22 @@ export interface paths {
         patch: operations["ApplicationsController_updateStatus_v1"];
         trace?: never;
     };
+    "/api/v1/notifications/broadcast": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["NotificationsController_broadcast_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/notifications/token": {
         parameters: {
             query?: never;
@@ -409,6 +425,27 @@ export interface components {
         UpdateApplicationStatusDto: {
             /** @enum {string} */
             status: "DRAFT" | "SUBMITTED" | "PROCESSING" | "UNDERWRITING" | "CONDITIONALLY_APPROVED" | "CLEAR_TO_CLOSE" | "CLOSED" | "CANCELLED";
+        };
+        BroadcastDto: {
+            /** @example Rates just dropped */
+            title: string;
+            /** @example 30-year rates fell this week — a great time to run your numbers. */
+            body: string;
+            /** @enum {string} */
+            audience: "ALL" | "BORROWERS" | "REALTORS";
+            /**
+             * @default GENERAL
+             * @enum {string}
+             */
+            type: "GENERAL" | "RATE_UPDATE" | "EDUCATIONAL";
+        };
+        BroadcastResultDto: {
+            /** @description Users targeted by the audience filter */
+            recipients: number;
+            /** @description Users with at least one device that accepted delivery */
+            delivered: number;
+            /** @description Users recorded but with no successful device delivery yet */
+            undelivered: number;
         };
         RegisterPushTokenDto: {
             /** @example ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx] */
@@ -815,6 +852,36 @@ export interface operations {
             };
             /** @description Not found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationsController_broadcast_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BroadcastDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BroadcastResultDto"];
+                };
+            };
+            /** @description Admin only */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -1,7 +1,9 @@
 import { Body, Controller, HttpCode, Post, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiForbiddenResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
 import {
+  BroadcastDto,
+  BroadcastResultDto,
   RegisterPushTokenDto,
   SendResultDto,
   SendTestNotificationDto,
@@ -10,13 +12,25 @@ import { NotificationsService } from './notifications.service';
 import { AccessTokenPayload } from '../auth/auth.service';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Roles } from '../auth/roles.decorator';
+import { RolesGuard } from '../auth/roles.guard';
 
 @ApiTags('notifications')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('notifications')
 export class NotificationsController {
   constructor(private readonly notifications: NotificationsService) {}
+
+  /** Admin broadcast: all users or a role segment. */
+  @Post('broadcast')
+  @Roles('ADMIN')
+  @HttpCode(200)
+  @ApiOkResponse({ type: BroadcastResultDto })
+  @ApiForbiddenResponse({ description: 'Admin only' })
+  broadcast(@Body() dto: BroadcastDto): Promise<BroadcastResultDto> {
+    return this.notifications.broadcast(dto);
+  }
 
   @Post('token')
   @HttpCode(204)

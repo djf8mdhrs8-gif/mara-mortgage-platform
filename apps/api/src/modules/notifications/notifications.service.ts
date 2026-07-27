@@ -1,7 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import type { NotificationType } from '@prisma/client';
 
-import { RegisterPushTokenDto, SendResultDto } from './notifications.dto';
+import {
+  BroadcastDto,
+  BroadcastResultDto,
+  RegisterPushTokenDto,
+  SendResultDto,
+} from './notifications.dto';
 import { PushTransport } from './push-transport.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -21,6 +26,32 @@ export class NotificationsService {
       create: { userId, token: dto.token, platform: dto.platform },
       update: { userId, platform: dto.platform },
     });
+  }
+
+  /**
+   * Admin broadcast to an audience segment. Every targeted user gets a
+   * Notification row (their in-app history) regardless of device delivery.
+   */
+  async broadcast(dto: BroadcastDto): Promise<BroadcastResultDto> {
+    const roleFilter =
+      dto.audience === 'BORROWERS'
+        ? { role: 'BORROWER' as const }
+        : dto.audience === 'REALTORS'
+          ? { role: 'REALTOR' as const }
+          : {};
+    const users = await this.prisma.user.findMany({ where: roleFilter });
+
+    let delivered = 0;
+    for (const user of users) {
+      const result = await this.sendToUser(user.id, {
+        type: dto.type ?? 'GENERAL',
+        title: dto.title,
+        body: dto.body,
+      });
+      if (result.status === 'SENT') delivered += 1;
+    }
+
+    return { recipients: users.length, delivered, undelivered: users.length - delivered };
   }
 
   /** Notifies every staff account (loan officers + admins), except `excludeUserId`. */

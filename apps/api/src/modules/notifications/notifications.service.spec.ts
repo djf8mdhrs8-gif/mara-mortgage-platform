@@ -27,7 +27,25 @@ function makeFakes(outcomeFor: (token: string) => boolean) {
   const sentMessages: { to: string; title?: string }[] = [];
   let seq = 0;
 
+  const users = [
+    { id: 'user_a', role: 'BORROWER' },
+    { id: 'user_b', role: 'BORROWER' },
+    { id: 'user_r', role: 'REALTOR' },
+    { id: 'user_lo', role: 'LOAN_OFFICER' },
+    { id: 'user_adm', role: 'ADMIN' },
+  ];
+
   const prisma = {
+    user: {
+      findMany: ({ where }: { where?: { role?: string | { in: string[] } } }) =>
+        Promise.resolve(
+          users.filter((u) => {
+            if (where?.role === undefined) return true;
+            if (typeof where.role === 'string') return u.role === where.role;
+            return where.role.in.includes(u.role);
+          }),
+        ),
+    },
     pushToken: {
       upsert: ({ where, create, update }: {
         where: { token: string };
@@ -76,6 +94,37 @@ function makeFakes(outcomeFor: (token: string) => boolean) {
 
   return { prisma, transport, tokens, notifications, sentMessages };
 }
+
+describe('NotificationsService broadcast', () => {
+  it('BORROWERS audience only records rows for borrowers, with delivery counts', async () => {
+    const fakes = makeFakes((t) => t.includes('good'));
+    const service = new NotificationsService(fakes.prisma, fakes.transport);
+    await service.registerToken('user_a', { token: 'ExponentPushToken[good-a]', platform: 'ios' });
+    // user_b has no device
+
+    const result = await service.broadcast({
+      title: 'Rates',
+      body: 'Dropped',
+      audience: 'BORROWERS',
+    });
+
+    expect(result.recipients).toBe(2);
+    expect(result.delivered).toBe(1);
+    expect(result.undelivered).toBe(1);
+    const userIds = fakes.notifications.map((n) => n.userId).sort();
+    expect(userIds).toEqual(['user_a', 'user_b']);
+  });
+
+  it('ALL audience reaches every user', async () => {
+    const fakes = makeFakes(() => false);
+    const service = new NotificationsService(fakes.prisma, fakes.transport);
+
+    const result = await service.broadcast({ title: 'Hi', body: 'All', audience: 'ALL' });
+    expect(result.recipients).toBe(5);
+    expect(result.delivered).toBe(0);
+    expect(fakes.notifications).toHaveLength(5);
+  });
+});
 
 describe('NotificationsService', () => {
   let fakes: ReturnType<typeof makeFakes>;
