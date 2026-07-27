@@ -132,6 +132,86 @@ export interface paths {
         patch: operations["ApplicationsController_updateStatus_v1"];
         trace?: never;
     };
+    "/api/v1/notifications/token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["NotificationsController_registerToken_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["NotificationsController_sendTest_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/articles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ArticlesController_list_v1"];
+        put?: never;
+        post: operations["ArticlesController_create_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/articles/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ArticlesController_getBySlug_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/articles/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["ArticlesController_update_v1"];
+        trace?: never;
+    };
     "/api/v1/calculators/amortization/pdf": {
         parameters: {
             query?: never;
@@ -260,38 +340,6 @@ export interface paths {
         patch: operations["LoanProgramsController_update_v1"];
         trace?: never;
     };
-    "/api/v1/notifications/token": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["NotificationsController_registerToken_v1"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/notifications/test": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["NotificationsController_sendTest_v1"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/health": {
         parameters: {
             query?: never;
@@ -361,6 +409,61 @@ export interface components {
         UpdateApplicationStatusDto: {
             /** @enum {string} */
             status: "DRAFT" | "SUBMITTED" | "PROCESSING" | "UNDERWRITING" | "CONDITIONALLY_APPROVED" | "CLEAR_TO_CLOSE" | "CLOSED" | "CANCELLED";
+        };
+        RegisterPushTokenDto: {
+            /** @example ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx] */
+            token: string;
+            /** @enum {string} */
+            platform: "ios" | "android";
+        };
+        SendTestNotificationDto: {
+            /** @example Hello from Mara Mortgage */
+            title: string;
+            /** @example Push plumbing works end to end. */
+            body: string;
+        };
+        SendResultDto: {
+            /** @description Notification row id recorded for this send */
+            notificationId: string;
+            /** @enum {string} */
+            status: "SENT" | "FAILED" | "PENDING";
+            /** @description Device tokens targeted */
+            deviceCount: number;
+            /** @description Per-device outcome detail (Expo ticket status/errors) */
+            detail: string;
+        };
+        ArticleDto: {
+            id: string;
+            slug: string;
+            title: string;
+            excerpt?: string | null;
+            /** @description Long-form body; paragraphs separated by blank lines */
+            content: string;
+            published: boolean;
+            publishedAt?: string | null;
+            updatedAt: string;
+        };
+        CreateArticleDto: {
+            /** @example five-credit-myths */
+            slug: string;
+            /** @example Five Credit Myths That Cost Homebuyers */
+            title: string;
+            /** @example What actually moves your score — and what doesn’t. */
+            excerpt?: string;
+            content: string;
+            /** @default false */
+            published: boolean;
+        };
+        UpdateArticleDto: {
+            /** @example five-credit-myths */
+            slug?: string;
+            /** @example Five Credit Myths That Cost Homebuyers */
+            title?: string;
+            /** @example What actually moves your score — and what doesn’t. */
+            excerpt?: string;
+            content?: string;
+            /** @default false */
+            published: boolean;
         };
         AmortizationPdfRequestDto: {
             /**
@@ -457,28 +560,6 @@ export interface components {
             sortOrder: number;
             /** @default false */
             published: boolean;
-        };
-        RegisterPushTokenDto: {
-            /** @example ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx] */
-            token: string;
-            /** @enum {string} */
-            platform: "ios" | "android";
-        };
-        SendTestNotificationDto: {
-            /** @example Hello from Mara Mortgage */
-            title: string;
-            /** @example Push plumbing works end to end. */
-            body: string;
-        };
-        SendResultDto: {
-            /** @description Notification row id recorded for this send */
-            notificationId: string;
-            /** @enum {string} */
-            status: "SENT" | "FAILED" | "PENDING";
-            /** @description Device tokens targeted */
-            deviceCount: number;
-            /** @description Per-device outcome detail (Expo ticket status/errors) */
-            detail: string;
         };
         HealthResponseDto: {
             /** @enum {string} */
@@ -733,6 +814,173 @@ export interface operations {
                 content?: never;
             };
             /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationsController_registerToken_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterPushTokenDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationsController_sendTest_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendTestNotificationDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SendResultDto"];
+                };
+            };
+        };
+    };
+    ArticlesController_list_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleDto"][];
+                };
+            };
+        };
+    };
+    ArticlesController_create_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateArticleDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleDto"];
+                };
+            };
+            /** @description Admin only */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Slug already exists */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ArticlesController_getBySlug_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleDto"];
+                };
+            };
+            /** @description Unknown or unpublished article */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ArticlesController_update_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateArticleDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleDto"];
+                };
+            };
+            /** @description Admin only */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unknown article */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -1072,50 +1320,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
-            };
-        };
-    };
-    NotificationsController_registerToken_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RegisterPushTokenDto"];
-            };
-        };
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    NotificationsController_sendTest_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SendTestNotificationDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SendResultDto"];
-                };
             };
         };
     };

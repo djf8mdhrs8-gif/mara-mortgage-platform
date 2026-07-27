@@ -11,6 +11,7 @@ export default function LearnLayout() {
       }}
     >
       <Stack.Screen name="[slug]" options={{ title: 'Loan Program' }} />
+      <Stack.Screen name="article/[slug]" options={{ title: 'Article' }} />
     </Stack>
   );
 }

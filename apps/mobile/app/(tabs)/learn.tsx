@@ -1,8 +1,34 @@
 import { Link } from 'expo-router';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { useArticles } from '@/features/learn/useArticles';
 import { useLoanPrograms } from '@/features/learn/useLoanPrograms';
 import { colors, radii, spacing, typography } from '@/theme/tokens';
+
+function ArticlesSection() {
+  const { data } = useArticles();
+  if (data === undefined || data.length === 0) return null;
+
+  return (
+    <View style={styles.articles}>
+      <Text style={styles.sectionHeading}>Articles & Tips</Text>
+      {data.map((article) => (
+        <Link
+          key={article.slug}
+          href={{ pathname: '/learn/article/[slug]', params: { slug: article.slug } }}
+          asChild
+        >
+          <Pressable style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}>
+            <Text style={styles.cardTitle}>{article.title}</Text>
+            {article.excerpt !== null ? (
+              <Text style={styles.cardSummary}>{article.excerpt}</Text>
+            ) : null}
+          </Pressable>
+        </Link>
+      ))}
+    </View>
+  );
+}
 
 export default function LearnScreen() {
   const { data, isPending, isError } = useLoanPrograms();
@@ -32,6 +58,7 @@ export default function LearnScreen() {
               </Pressable>
             </Link>
           )}
+          ListFooterComponent={<ArticlesSection />}
         />
       )}
     </View>
@@ -81,5 +108,16 @@ const styles = StyleSheet.create({
   cardSummary: {
     ...typography.caption,
     color: colors.textSecondary,
+  },
+  articles: {
+    marginTop: spacing.lg,
+    gap: spacing.sm,
+  },
+  sectionHeading: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
 });

@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { LoggerModule } from 'nestjs-pino';
 
 import { ApplicationsModule } from './modules/applications/applications.module';
+import { ArticlesModule } from './modules/articles/articles.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CalculatorsModule } from './modules/calculators/calculators.module';
 import { ContentModule } from './modules/content/content.module';
@@ -35,6 +36,7 @@ import { PrismaModule } from './prisma/prisma.module';
     AuthModule,
     StorageModule,
     ApplicationsModule,
+    ArticlesModule,
     CalculatorsModule,
     ContentModule,
     DocumentsModule,

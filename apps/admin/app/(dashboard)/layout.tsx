@@ -40,7 +40,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           <Link href="/" style={styles.link}>
             Dashboard
           </Link>
-          <span style={styles.linkDisabled}>Content (M29)</span>
+          <Link href="/content" style={styles.link}>
+            Content
+          </Link>
           <span style={styles.linkDisabled}>Notifications (M30)</span>
         </div>
         <div style={styles.user}>
