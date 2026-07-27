@@ -53,7 +53,8 @@ export class ApplicationsController {
   updateStatus(
     @Param('id') id: string,
     @Body() dto: UpdateApplicationStatusDto,
+    @CurrentUser() user: AccessTokenPayload,
   ): Promise<ApplicationDto> {
-    return this.applications.updateStatus(id, dto.status);
+    return this.applications.updateStatus(id, dto.status, user);
   }
 }

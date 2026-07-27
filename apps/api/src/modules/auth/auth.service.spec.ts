@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { AuthService } from './auth.service';
+import type { AuditService } from '../../audit/audit.service';
 import type { PrismaService } from '../../prisma/prisma.service';
 
 interface UserRow {
@@ -147,6 +148,17 @@ function makeFakePrisma() {
 
 const jwt = new JwtService({ secret: 'test-secret-at-least-16-chars' });
 
+function makeFakeAudit() {
+  const entries: { action: string; actorId?: string | null; detail?: unknown }[] = [];
+  const service = {
+    record: (action: string, entry: { actorId?: string | null; detail?: unknown } = {}) => {
+      entries.push({ action, ...entry });
+      return Promise.resolve();
+    },
+  } as unknown as AuditService;
+  return { service, entries };
+}
+
 const REGISTRATION = {
   email: 'Jane@Example.com',
   password: 'hunter2hunter2',
@@ -157,10 +169,12 @@ const REGISTRATION = {
 describe('AuthService', () => {
   let prisma: ReturnType<typeof makeFakePrisma>;
   let service: AuthService;
+  let audit: ReturnType<typeof makeFakeAudit>;
 
   beforeEach(() => {
     prisma = makeFakePrisma();
-    service = new AuthService(prisma, jwt);
+    audit = makeFakeAudit();
+    service = new AuthService(prisma, jwt, audit.service);
   });
 
   it('registers a user, lowercases the email, and returns working tokens', async () => {
@@ -189,6 +203,23 @@ describe('AuthService', () => {
     await expect(service.login('nobody@example.com', 'whatever123')).rejects.toThrowError(
       'invalid credentials',
     );
+  });
+
+  it('audit-logs login success and both failure modes', async () => {
+    const registered = await service.register(REGISTRATION);
+
+    await service.login('jane@example.com', REGISTRATION.password);
+    await service.login('jane@example.com', 'not-the-password').catch(() => undefined);
+    await service.login('nobody@example.com', 'whatever123').catch(() => undefined);
+
+    expect(audit.entries).toEqual([
+      expect.objectContaining({ action: 'LOGIN_SUCCESS', actorId: registered.user.id }),
+      expect.objectContaining({ action: 'LOGIN_FAILURE', actorId: registered.user.id }),
+      expect.objectContaining({
+        action: 'LOGIN_FAILURE',
+        detail: expect.objectContaining({ email: 'nobody@example.com' }),
+      }),
+    ]);
   });
 
   it('rotates the refresh token on use', async () => {

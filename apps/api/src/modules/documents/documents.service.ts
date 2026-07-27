@@ -11,6 +11,7 @@ import type { Document } from '@prisma/client';
 
 import type { AccessTokenPayload } from '../auth/auth.service';
 import { DocumentDto } from './documents.dto';
+import { AuditService } from '../../audit/audit.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { StorageService } from '../../storage/storage.service';
@@ -51,6 +52,7 @@ export class DocumentsService {
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
     private readonly notifications: NotificationsService,
+    private readonly audit: AuditService,
   ) {}
 
   /** Best-effort notification — never lets a push failure break the mutation. */
@@ -103,6 +105,13 @@ export class DocumentsService {
       },
     });
 
+    await this.audit.record('DOCUMENT_UPLOAD', {
+      actorId: payload.sub,
+      targetType: 'document',
+      targetId: doc.id,
+      detail: { applicationId, fileName, sizeBytes: file.size },
+    });
+
     // Heads-up to the loan team (not to the uploader themselves).
     await this.notify(() =>
       this.notifications.sendToStaff(
@@ -128,7 +137,11 @@ export class DocumentsService {
   }
 
   /** Staff-only at the controller layer (@Roles); 404 on unknown ids. */
-  async updateStatus(documentId: string, status: Document['status']): Promise<DocumentDto> {
+  async updateStatus(
+    documentId: string,
+    status: Document['status'],
+    payload: AccessTokenPayload,
+  ): Promise<DocumentDto> {
     const doc = await this.prisma.document.findUnique({
       where: { id: documentId },
       include: { application: true },
@@ -139,6 +152,13 @@ export class DocumentsService {
     const updated = await this.prisma.document.update({
       where: { id: documentId },
       data: { status },
+    });
+
+    await this.audit.record('DOCUMENT_STATUS_CHANGE', {
+      actorId: payload.sub,
+      targetType: 'document',
+      targetId: documentId,
+      detail: { from: doc.status, to: status },
     });
 
     // Document reminder to the borrower when action is needed.
@@ -166,6 +186,12 @@ export class DocumentsService {
     if (doc === null || (!isStaff(payload) && doc.application.userId !== payload.sub)) {
       throw new NotFoundException('document not found');
     }
+    await this.audit.record('DOCUMENT_DOWNLOAD', {
+      actorId: payload.sub,
+      targetType: 'document',
+      targetId: doc.id,
+      detail: { applicationId: doc.applicationId, fileName: doc.fileName },
+    });
     return { meta: toDto(doc), stream: await this.storage.getStream(doc.storageKey) };
   }
 }

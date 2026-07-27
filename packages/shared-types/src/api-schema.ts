@@ -645,6 +645,13 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
     };
     AuthController_login_v1: {
@@ -675,6 +682,13 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
     };
     AuthController_refresh_v1: {
@@ -700,6 +714,13 @@ export interface operations {
             };
             /** @description Invalid, expired, or reused refresh token */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Rate limit exceeded */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -59,6 +59,15 @@ enum NotificationStatus {
   FAILED
 }
 
+enum AuditAction {
+  LOGIN_SUCCESS
+  LOGIN_FAILURE
+  DOCUMENT_UPLOAD
+  DOCUMENT_DOWNLOAD
+  DOCUMENT_STATUS_CHANGE
+  APPLICATION_STATUS_CHANGE
+}
+
 // ---------- Models ----------
 
 model User {
@@ -222,6 +231,25 @@ model PushToken {
 
   @@index([userId])
   @@map("push_tokens")
+}
+
+// Append-only trail of who did what, when — regulated-industry expectation
+// for document access and status changes (ARCHITECTURE.md §6). No FK to users:
+// audit rows must survive account deletion, and LOGIN_FAILURE has no actor id.
+model AuditLog {
+  id         String      @id @default(cuid())
+  action     AuditAction
+  // Acting user, when known. Failed logins store null + the attempted email in detail.
+  actorId    String?
+  targetType String?
+  targetId   String?
+  detail     Json?
+  createdAt  DateTime    @default(now())
+
+  @@index([actorId, createdAt])
+  @@index([action, createdAt])
+  @@index([targetType, targetId])
+  @@map("audit_logs")
 }
 
 model Notification {

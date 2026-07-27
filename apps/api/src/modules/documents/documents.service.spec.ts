@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { DocumentsService } from './documents.service';
 import type { AccessTokenPayload } from '../auth/auth.service';
+import type { AuditService } from '../../audit/audit.service';
 import type { PrismaService } from '../../prisma/prisma.service';
 import type { StorageService } from '../../storage/storage.service';
 import type { NotificationsService } from '../notifications/notifications.service';
@@ -93,7 +94,15 @@ function makeFakes() {
     },
   } as unknown as NotificationsService;
 
-  return { prisma, storage, stored, notifications, notified };
+  const audited: { action: string; actorId?: string | null; targetId?: string }[] = [];
+  const audit = {
+    record: (action: string, entry: { actorId?: string | null; targetId?: string } = {}) => {
+      audited.push({ action, ...entry });
+      return Promise.resolve();
+    },
+  } as unknown as AuditService;
+
+  return { prisma, storage, stored, notifications, notified, audit, audited };
 }
 
 const borrowerA: AccessTokenPayload = { sub: 'user_a', role: 'BORROWER' };
@@ -111,12 +120,14 @@ describe('DocumentsService', () => {
   let service: DocumentsService;
   let stored: Map<string, Buffer>;
   let notified: { kind: string; userId?: string; type?: string; body?: string }[];
+  let audited: { action: string; actorId?: string | null; targetId?: string }[];
 
   beforeEach(() => {
     const fakes = makeFakes();
     stored = fakes.stored;
     notified = fakes.notified;
-    service = new DocumentsService(fakes.prisma, fakes.storage, fakes.notifications);
+    audited = fakes.audited;
+    service = new DocumentsService(fakes.prisma, fakes.storage, fakes.notifications, fakes.audit);
   });
 
   it('uploads and lists a document for the owning borrower', async () => {
@@ -164,15 +175,15 @@ describe('DocumentsService', () => {
 
   it('updateStatus changes the review state and 404s on unknown ids', async () => {
     const doc = await service.upload('app_a', borrowerA, pdf());
-    const updated = await service.updateStatus(doc.id, 'NEEDS_RESUBMISSION');
+    const updated = await service.updateStatus(doc.id, 'NEEDS_RESUBMISSION', loanOfficer);
     expect(updated.status).toBe('NEEDS_RESUBMISSION');
 
     const list = await service.list('app_a', borrowerA);
     expect(list[0]?.status).toBe('NEEDS_RESUBMISSION');
 
-    await expect(service.updateStatus('doc_missing', 'ACCEPTED')).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
+    await expect(
+      service.updateStatus('doc_missing', 'ACCEPTED', loanOfficer),
+    ).rejects.toBeInstanceOf(NotFoundException);
   });
 
   it('uploads notify staff; NEEDS_RESUBMISSION notifies the owning borrower once', async () => {
@@ -180,14 +191,42 @@ describe('DocumentsService', () => {
     expect(notified.filter((n) => n.kind === 'staff')).toHaveLength(1);
     expect(notified[0]?.body).toContain('bank-statement.pdf');
 
-    await service.updateStatus(doc.id, 'NEEDS_RESUBMISSION');
+    await service.updateStatus(doc.id, 'NEEDS_RESUBMISSION', loanOfficer);
     const reminders = notified.filter((n) => n.kind === 'user');
     expect(reminders).toHaveLength(1);
     expect(reminders[0]).toMatchObject({ userId: 'user_a', type: 'DOCUMENT_REMINDER' });
 
     // Already NEEDS_RESUBMISSION -> no duplicate reminder
-    await service.updateStatus(doc.id, 'NEEDS_RESUBMISSION');
+    await service.updateStatus(doc.id, 'NEEDS_RESUBMISSION', loanOfficer);
     expect(notified.filter((n) => n.kind === 'user')).toHaveLength(1);
+  });
+
+  it('upload, download, and status changes are audit-logged with the acting user', async () => {
+    const doc = await service.upload('app_a', borrowerA, pdf());
+    await service.openDownload(doc.id, loanOfficer);
+    await service.updateStatus(doc.id, 'ACCEPTED', loanOfficer);
+
+    expect(audited).toEqual([
+      expect.objectContaining({ action: 'DOCUMENT_UPLOAD', actorId: 'user_a', targetId: doc.id }),
+      expect.objectContaining({
+        action: 'DOCUMENT_DOWNLOAD',
+        actorId: 'user_lo',
+        targetId: doc.id,
+      }),
+      expect.objectContaining({
+        action: 'DOCUMENT_STATUS_CHANGE',
+        actorId: 'user_lo',
+        targetId: doc.id,
+      }),
+    ]);
+  });
+
+  it('denied downloads leave no audit entry', async () => {
+    const doc = await service.upload('app_a', borrowerA, pdf());
+    await expect(service.openDownload(doc.id, borrowerB)).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+    expect(audited.filter((a) => a.action === 'DOCUMENT_DOWNLOAD')).toHaveLength(0);
   });
 
   it('sanitizes hostile filenames but keeps the storage key server-generated', async () => {

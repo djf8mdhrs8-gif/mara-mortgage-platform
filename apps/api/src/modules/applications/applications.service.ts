@@ -3,6 +3,7 @@ import type { Application, ApplicationStatus } from '@prisma/client';
 
 import type { AccessTokenPayload } from '../auth/auth.service';
 import { ApplicationDto } from './applications.dto';
+import { AuditService } from '../../audit/audit.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -41,6 +42,7 @@ export class ApplicationsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
+    private readonly audit: AuditService,
   ) {}
 
   async create(payload: AccessTokenPayload): Promise<ApplicationDto> {
@@ -69,12 +71,23 @@ export class ApplicationsService {
     return toDto(app);
   }
 
-  async updateStatus(id: string, status: Application['status']): Promise<ApplicationDto> {
+  async updateStatus(
+    id: string,
+    status: Application['status'],
+    payload: AccessTokenPayload,
+  ): Promise<ApplicationDto> {
     const app = await this.prisma.application.findUnique({ where: { id } });
     if (app === null) {
       throw new NotFoundException('application not found');
     }
     const updated = await this.prisma.application.update({ where: { id }, data: { status } });
+
+    await this.audit.record('APPLICATION_STATUS_CHANGE', {
+      actorId: payload.sub,
+      targetType: 'application',
+      targetId: id,
+      detail: { from: app.status, to: status },
+    });
 
     // Milestone push to the borrower — best-effort: a notification failure
     // must never fail the status change itself.

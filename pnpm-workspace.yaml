@@ -1,6 +1,13 @@
 packages:
   - "apps/*"
   - "packages/*"
+# Security floor for a transitive dep (pnpm audit): next pins an older 8.x
+# postcss; 8.5.18+ fixes GHSA path-traversal/XSS advisories. Same major, safe.
+overrides:
+  postcss: ">=8.5.18"
+  # Scoped to swagger (its own dep line is 5.2.1; 5.2.2 fixes a parsing DoS)
+  # so the rest of the tree keeps whatever js-yaml major it expects.
+  "@nestjs/swagger>js-yaml": ">=5.2.2"
 allowBuilds:
   '@prisma/client': true
   '@prisma/engines': true

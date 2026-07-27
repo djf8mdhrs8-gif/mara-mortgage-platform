@@ -6,6 +6,7 @@ import type { User, UserRole } from '@prisma/client';
 import * as argon2 from 'argon2';
 
 import { AuthResponseDto, AuthUserDto } from './auth.dto';
+import { AuditService } from '../../audit/audit.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
 export interface AccessTokenPayload {
@@ -35,6 +36,7 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
+    private readonly audit: AuditService,
   ) {}
 
   async register(input: {
@@ -71,13 +73,21 @@ export class AuthService {
     });
     // Same error for unknown email and wrong password — no account enumeration.
     if (user?.credential == null) {
+      await this.audit.record('LOGIN_FAILURE', {
+        detail: { email: email.toLowerCase().trim(), reason: 'unknown_email' },
+      });
       throw new UnauthorizedException('invalid credentials');
     }
     const valid = await argon2.verify(user.credential.passwordHash, password);
     if (!valid) {
+      await this.audit.record('LOGIN_FAILURE', {
+        actorId: user.id,
+        detail: { reason: 'wrong_password' },
+      });
       throw new UnauthorizedException('invalid credentials');
     }
 
+    await this.audit.record('LOGIN_SUCCESS', { actorId: user.id });
     return this.issueTokens(user);
   }
 

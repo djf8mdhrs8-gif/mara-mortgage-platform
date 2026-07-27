@@ -1,7 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
 
+import { AuditModule } from './audit/audit.module';
 import { ApplicationsModule } from './modules/applications/applications.module';
 import { ArticlesModule } from './modules/articles/articles.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -32,7 +35,11 @@ import { PrismaModule } from './prisma/prisma.module';
         redact: ['req.headers.authorization', 'req.headers.cookie'],
       },
     }),
+    // Global rate limit — a generous ceiling for normal API use. Auth routes
+    // carry much tighter per-route @Throttle overrides (see AuthController).
+    ThrottlerModule.forRoot({ throttlers: [{ ttl: 60_000, limit: 100 }] }),
     PrismaModule,
+    AuditModule,
     AuthModule,
     StorageModule,
     ApplicationsModule,
@@ -44,5 +51,6 @@ import { PrismaModule } from './prisma/prisma.module';
     NotificationsModule,
     HealthModule,
   ],
+  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}

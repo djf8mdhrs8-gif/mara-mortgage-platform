@@ -80,8 +80,9 @@ export class DocumentsController {
   updateStatus(
     @Param('id') documentId: string,
     @Body() dto: UpdateDocumentStatusDto,
+    @CurrentUser() user: AccessTokenPayload,
   ): Promise<DocumentDto> {
-    return this.documents.updateStatus(documentId, dto.status);
+    return this.documents.updateStatus(documentId, dto.status, user);
   }
 
   @Get('documents/:id/download')

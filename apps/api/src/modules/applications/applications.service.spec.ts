@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { ApplicationsService } from './applications.service';
 import type { NotificationsService } from '../notifications/notifications.service';
 import type { AccessTokenPayload } from '../auth/auth.service';
+import type { AuditService } from '../../audit/audit.service';
 import type { PrismaService } from '../../prisma/prisma.service';
 
 interface AppRow {
@@ -70,6 +71,17 @@ function makeFakeNotifications() {
   return { service, sent };
 }
 
+function makeFakeAudit() {
+  const entries: { action: string; actorId?: string | null; targetId?: string }[] = [];
+  const service = {
+    record: (action: string, entry: { actorId?: string | null; targetId?: string } = {}) => {
+      entries.push({ action, ...entry });
+      return Promise.resolve();
+    },
+  } as unknown as AuditService;
+  return { service, entries };
+}
+
 const borrowerA: AccessTokenPayload = { sub: 'user_a', role: 'BORROWER' };
 const borrowerB: AccessTokenPayload = { sub: 'user_b', role: 'BORROWER' };
 const loanOfficer: AccessTokenPayload = { sub: 'user_lo', role: 'LOAN_OFFICER' };
@@ -77,10 +89,12 @@ const loanOfficer: AccessTokenPayload = { sub: 'user_lo', role: 'LOAN_OFFICER' }
 describe('ApplicationsService', () => {
   let service: ApplicationsService;
   let notifications: ReturnType<typeof makeFakeNotifications>;
+  let audit: ReturnType<typeof makeFakeAudit>;
 
   beforeEach(() => {
     notifications = makeFakeNotifications();
-    service = new ApplicationsService(makeFakePrisma(), notifications.service);
+    audit = makeFakeAudit();
+    service = new ApplicationsService(makeFakePrisma(), notifications.service, audit.service);
   });
 
   it("borrowers only see their own applications in list()", async () => {
@@ -115,19 +129,32 @@ describe('ApplicationsService', () => {
   it('status changes push a LOAN_MILESTONE notification to the owner (but not for no-op changes)', async () => {
     const app = await service.create(borrowerA);
 
-    await service.updateStatus(app.id, 'UNDERWRITING');
+    await service.updateStatus(app.id, 'UNDERWRITING', loanOfficer);
     expect(notifications.sent).toHaveLength(1);
     expect(notifications.sent[0]).toMatchObject({ userId: 'user_a', type: 'LOAN_MILESTONE' });
     expect(notifications.sent[0]?.body).toContain('underwriter');
 
     // Same status again -> no duplicate push
-    await service.updateStatus(app.id, 'UNDERWRITING');
+    await service.updateStatus(app.id, 'UNDERWRITING', loanOfficer);
     expect(notifications.sent).toHaveLength(1);
   });
 
   it('updateStatus 404s on unknown ids', async () => {
-    await expect(service.updateStatus('app_missing', 'SUBMITTED')).rejects.toBeInstanceOf(
-      NotFoundException,
+    await expect(
+      service.updateStatus('app_missing', 'SUBMITTED', loanOfficer),
+    ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('status changes are audit-logged with the acting staff user', async () => {
+    const app = await service.create(borrowerA);
+    await service.updateStatus(app.id, 'UNDERWRITING', loanOfficer);
+
+    expect(audit.entries).toContainEqual(
+      expect.objectContaining({
+        action: 'APPLICATION_STATUS_CHANGE',
+        actorId: 'user_lo',
+        targetId: app.id,
+      }),
     );
   });
 });

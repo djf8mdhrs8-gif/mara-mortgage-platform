@@ -1,0 +1,21 @@
+version: 2
+updates:
+  # One npm entry at the repo root covers the whole pnpm workspace —
+  # Dependabot reads pnpm-lock.yaml and opens PRs per dependency.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      # Batch routine minor/patch bumps into one PR to keep noise down;
+      # majors and security updates still arrive individually.
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
