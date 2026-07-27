@@ -28,6 +28,12 @@ const CALCULATORS = [
     description: 'How much home your income and debts support (28/36 rule)',
     ready: true,
   },
+  {
+    href: '/calculators/rent-vs-buy',
+    title: 'Rent vs. Buy',
+    description: 'Project your wealth over time on each path — with break-even year',
+    ready: true,
+  },
 ] as const;
 
 export default function CalculatorsScreen() {

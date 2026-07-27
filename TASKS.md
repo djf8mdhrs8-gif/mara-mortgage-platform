@@ -65,7 +65,7 @@ Legend: `[ ]` not started · each item lists its **Done when** criteria so "fini
 
 ## Phase 1.5 — Rounding out the MVP
 
-- [ ] **35. Rent vs. buy calculator** — projected wealth comparison over time, chart visualization.
+- [x] **35. Rent vs. buy calculator** — projected wealth comparison over time, chart visualization. ✅ 2026-07-27 — calculateRentVsBuy in @mara/mortgage-calc (monthly simulation in integer cents; equal-cash framing: renter invests the buyer's down payment+closing costs and each side invests its monthly surplus; buyer wealth marks home to market net of selling costs; PMI drops at 80% of price; costs as % of current value; rent/value step yearly; 1–50yr horizon; 8 tests against pencil-and-paper references, 42 calc tests total). Mobile: /calculators/rent-vs-buy screen (Buying/Renting/Assumptions sections, live recompute) + reusable WealthChart (react-native-svg dual-line buyer/renter projection, break-even dashed marker, compact axis labels) — first chart component in the app. No API endpoint by design: calculators run on-device like the other four; API stays PDF-export-only. Verified in the running web app: chart renders (2 polylines, axes, legend), verdict/break-even react to input changes (3%→6% appreciation flipped rent-favored to buy-favored w/ year-4 break-even). Gotcha logged: RN-web never fired onLayout for the chart wrapper — WealthChart falls back to useWindowDimensions estimate, onLayout refines on native.
 - [ ] **36. Buydown calculator** — permanent, 2-1, 3-2-1 buydowns; payment schedule + savings.
 - [ ] **37. Property analysis tool** — address + financials → instant payment calculation.
 - [ ] **38. Save & compare mortgage scenarios** — save calculator runs, side-by-side comparison view.

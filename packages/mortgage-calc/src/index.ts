@@ -32,3 +32,9 @@ export {
   type AffordabilityInputs,
   type AffordabilityResult,
 } from './affordability';
+export {
+  calculateRentVsBuy,
+  type RentVsBuyInputs,
+  type RentVsBuyYear,
+  type RentVsBuyResult,
+} from './rent-vs-buy';
