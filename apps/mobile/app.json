@@ -10,13 +10,17 @@
     "icon": "./assets/branding/icon.png",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.maramortgage.app"
+      "bundleIdentifier": "com.maramortgage.app",
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "Face ID lets you unlock the app quickly while keeping your loan details private.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.maramortgage.app",
       "edgeToEdgeEnabled": true,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/branding/icon.png",
+        "foregroundImage": "./assets/branding/icon-adaptive.png",
         "backgroundColor": "#FFFFFF"
       }
     },
