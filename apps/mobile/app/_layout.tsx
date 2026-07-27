@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SplashScreen, Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -9,6 +10,17 @@ import { useLogout } from '@/features/auth/useAuth';
 import { useSessionRestore } from '@/features/auth/useSessionRestore';
 import { usePushRegistration } from '@/features/notifications/usePushRegistration';
 import { LockScreen } from '@/components/LockScreen';
+
+// Crash reporting. With no DSN configured (local dev default) the SDK is
+// disabled entirely — no network calls, no console noise.
+const sentryDsn = process.env.EXPO_PUBLIC_SENTRY_DSN;
+Sentry.init({
+  dsn: sentryDsn,
+  enabled: sentryDsn !== undefined && sentryDsn !== '',
+  // PII (emails, tokens, document names) must not ride along by default.
+  sendDefaultPii: false,
+  tracesSampleRate: 0.1,
+});
 
 // Keep the native splash visible until session restore decides where we land —
 // a returning user must never see a login-screen flash.
@@ -37,7 +49,7 @@ function LockedGate({ unlock }: { unlock: () => Promise<boolean> }) {
   return <LockScreen onUnlock={() => void unlock()} onSignOut={() => logout.mutate()} />;
 }
 
-export default function RootLayout() {
+function RootLayout() {
   // useState (not module scope) so a QueryClient is never shared across
   // React refresh boundaries in dev.
   const [queryClient] = useState(() => new QueryClient());
@@ -75,3 +87,6 @@ export default function RootLayout() {
     </QueryClientProvider>
   );
 }
+
+// Sentry.wrap adds the crash boundary + touch-event breadcrumbs around the app.
+export default Sentry.wrap(RootLayout);

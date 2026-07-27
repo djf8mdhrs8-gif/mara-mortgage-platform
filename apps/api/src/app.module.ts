@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
 import { LoggerModule } from 'nestjs-pino';
 
 import { AuditModule } from './audit/audit.module';
@@ -19,6 +20,9 @@ import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
   imports: [
+    // First so Sentry's request instrumentation wraps everything below.
+    // With no SENTRY_DSN (see instrument.ts) this is all a quiet no-op.
+    SentryModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       // Support running from apps/api (dev) or the repo root (docker/CI)
@@ -51,6 +55,10 @@ import { PrismaModule } from './prisma/prisma.module';
     NotificationsModule,
     HealthModule,
   ],
-  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
+  providers: [
+    // Reports unhandled (5xx) errors to Sentry; expected HttpExceptions pass through.
+    { provide: APP_FILTER, useClass: SentryGlobalFilter },
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+  ],
 })
 export class AppModule {}

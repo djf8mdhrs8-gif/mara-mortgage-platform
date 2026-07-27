@@ -1,3 +1,5 @@
+import './instrument';
+
 import { writeFileSync } from 'node:fs';
 
 import { ValidationPipe, VersioningType } from '@nestjs/common';

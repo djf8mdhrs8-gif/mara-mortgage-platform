@@ -1,5 +1,5 @@
-import { Controller, Get, ServiceUnavailableException } from '@nestjs/common';
-import { ApiOkResponse, ApiServiceUnavailableResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
+import { ApiExcludeEndpoint, ApiOkResponse, ApiServiceUnavailableResponse, ApiTags } from '@nestjs/swagger';
 
 import { HealthResponseDto } from './health.dto';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -25,5 +25,18 @@ export class HealthController {
       uptimeSeconds: Math.round(process.uptime()),
       timestamp: new Date().toISOString(),
     };
+  }
+
+  /**
+   * Deliberate crash for verifying Sentry capture end-to-end (M32 done-when).
+   * Disabled in production — there it 404s like any unknown route.
+   */
+  @Get('error-test')
+  @ApiExcludeEndpoint()
+  errorTest(): never {
+    if (process.env.NODE_ENV === 'production') {
+      throw new NotFoundException();
+    }
+    throw new Error('Deliberate test error — verifying Sentry capture');
   }
 }

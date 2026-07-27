@@ -28,6 +28,7 @@
       "expo-router",
       "expo-secure-store",
       "expo-sharing",
+      "@sentry/react-native/expo",
       [
         "expo-splash-screen",
         {
