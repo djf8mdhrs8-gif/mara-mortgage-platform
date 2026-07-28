@@ -39,6 +39,12 @@ export {
   type RentVsBuyResult,
 } from './rent-vs-buy';
 export {
+  analyzeProperty,
+  type PropertyAnalysisInputs,
+  type PropertyAnalysisOption,
+  type PropertyAnalysisResult,
+} from './property-analysis';
+export {
   calculateTemporaryBuydown,
   calculatePermanentBuydown,
   type TemporaryBuydownType,

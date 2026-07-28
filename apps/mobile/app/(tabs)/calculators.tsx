@@ -40,6 +40,12 @@ const CALCULATORS = [
     description: '2-1 and 3-2-1 temporary buydowns, or permanent discount points',
     ready: true,
   },
+  {
+    href: '/calculators/property',
+    title: 'Property Analysis',
+    description: 'Any address + its real costs — payment and cash across down-payment options',
+    ready: true,
+  },
 ] as const;
 
 export default function CalculatorsScreen() {
