@@ -12,6 +12,7 @@ import {
   View,
 } from 'react-native';
 
+import { SaveScenarioButton } from '@/components/SaveScenarioButton';
 import { colors, radii, spacing, typography } from '@/theme/tokens';
 
 /** Parses user-typed currency/number text; '' → 0 for optional fields. */
@@ -162,6 +163,26 @@ export default function BasicCalculatorScreen() {
 
         <Text style={styles.section}>Closing</Text>
         <Field label="Closing costs (optional)" value={closing} onChange={setClosing} placeholder="0" testID="calc-closing" />
+
+        <SaveScenarioButton
+          type="BASIC"
+          defaultName="Mortgage payment"
+          getInputs={() =>
+            result === null
+              ? null
+              : {
+                  purchasePrice: num(price),
+                  downPayment: { type: downMode, value: num(down) },
+                  annualRatePct: num(rate),
+                  termMonths: Math.round(num(years) * 12),
+                  propertyTaxAnnual: num(taxAnnual),
+                  homeInsuranceAnnual: num(insAnnual),
+                  hoaMonthly: num(hoa),
+                  pmiAnnualPct: num(pmiPct),
+                  closingCosts: num(closing),
+                }
+          }
+        />
 
         <View style={styles.results} testID="calc-results">
           {result === null ? (

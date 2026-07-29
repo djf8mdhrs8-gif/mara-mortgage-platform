@@ -16,6 +16,7 @@ import {
   View,
 } from 'react-native';
 
+import { SaveScenarioButton } from '@/components/SaveScenarioButton';
 import { colors, radii, spacing, typography } from '@/theme/tokens';
 
 type Mode = '2-1' | '3-2-1' | 'permanent';
@@ -157,6 +158,33 @@ export default function BuydownScreen() {
             </View>
           </View>
         ) : null}
+
+        <SaveScenarioButton
+          type="BUYDOWN"
+          defaultName={mode === 'permanent' ? 'Discount points' : `${mode} buydown`}
+          getInputs={() => {
+            if (mode === 'permanent') {
+              return perm === null
+                ? null
+                : {
+                    mode: 'permanent',
+                    loanAmount: num(loan),
+                    annualRatePct: num(rate),
+                    reducedRatePct: num(boughtRate),
+                    termMonths: Math.round(num(termYears) * 12),
+                    cost: num(pointsCost),
+                  };
+            }
+            return temp === null
+              ? null
+              : {
+                  loanAmount: num(loan),
+                  annualRatePct: num(rate),
+                  termMonths: Math.round(num(termYears) * 12),
+                  type: mode,
+                };
+          }}
+        />
 
         <View style={styles.results} testID="bd-results">
           {mode !== 'permanent' ? (

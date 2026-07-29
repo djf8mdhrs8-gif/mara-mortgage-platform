@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 
+import { SaveScenarioButton } from '@/components/SaveScenarioButton';
 import { colors, radii, spacing, typography } from '@/theme/tokens';
 
 function num(text: string): number {
@@ -152,6 +153,24 @@ export default function ExtraPaymentScreen() {
             />
           </View>
         </View>
+
+        <SaveScenarioButton
+          type="EXTRA_PAYMENT"
+          defaultName="Extra payments"
+          getInputs={() => {
+            if (result === null) return null;
+            const oneAmt = num(oneTimeAmount);
+            const oneMonth = Math.round(num(oneTimeMonth));
+            return {
+              principal: num(principal),
+              annualRatePct: num(rate),
+              termMonths: Math.round(num(years) * 12),
+              extraMonthly: num(extraMonthly),
+              extraAnnual: num(extraAnnual),
+              oneTime: oneAmt > 0 && oneMonth > 0 ? { amount: oneAmt, month: oneMonth } : undefined,
+            };
+          }}
+        />
 
         <View style={styles.results} testID="extra-results">
           {result === null ? (

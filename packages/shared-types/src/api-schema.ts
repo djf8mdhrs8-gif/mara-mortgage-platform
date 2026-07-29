@@ -356,6 +356,38 @@ export interface paths {
         patch: operations["LoanProgramsController_update_v1"];
         trace?: never;
     };
+    "/api/v1/scenarios": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ScenariosController_list_v1"];
+        put?: never;
+        post: operations["ScenariosController_save_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenarios/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ScenariosController_getById_v1"];
+        put?: never;
+        post?: never;
+        delete: operations["ScenariosController_remove_v1"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/health": {
         parameters: {
             query?: never;
@@ -597,6 +629,31 @@ export interface components {
             sortOrder: number;
             /** @default false */
             published: boolean;
+        };
+        /** @enum {string} */
+        ScenarioType: "BASIC" | "EXTRA_PAYMENT" | "REFINANCE" | "AFFORDABILITY" | "RENT_VS_BUY" | "BUYDOWN" | "PROPERTY_ANALYSIS";
+        SaveScenarioDto: {
+            type: components["schemas"]["ScenarioType"];
+            /** @example Maple St house, 20% down */
+            name: string;
+            /** @description Calculator inputs exactly as the engine accepts them. Outputs are always recomputed server-side — client-computed results are never stored. */
+            inputs: {
+                [key: string]: unknown;
+            };
+        };
+        ScenarioDto: {
+            id: string;
+            type: components["schemas"]["ScenarioType"];
+            name: string;
+            inputs: {
+                [key: string]: unknown;
+            };
+            /** @description Server-computed results (amortization schedules omitted for size — recompute on device when needed). */
+            outputs: {
+                [key: string]: unknown;
+            };
+            createdAt: string;
+            updatedAt: string;
         };
         HealthResponseDto: {
             /** @enum {string} */
@@ -1403,6 +1460,103 @@ export interface operations {
                 content?: never;
             };
             /** @description Unknown program */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ScenariosController_list_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScenarioDto"][];
+                };
+            };
+        };
+    };
+    ScenariosController_save_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveScenarioDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScenarioDto"];
+                };
+            };
+            /** @description Inputs are not valid for the calculator type */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ScenariosController_getById_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScenarioDto"];
+                };
+            };
+            /** @description Not found (or not yours) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ScenariosController_remove_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Not found (or not yours) */
             404: {
                 headers: {
                     [name: string]: unknown;

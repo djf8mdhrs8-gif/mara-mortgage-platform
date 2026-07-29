@@ -1,5 +1,5 @@
 import { Link } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { colors, radii, spacing, typography } from '@/theme/tokens';
 
@@ -50,7 +50,18 @@ const CALCULATORS = [
 
 export default function CalculatorsScreen() {
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.flex} contentContainerStyle={styles.container}>
+      <Link href="/calculators/saved" asChild>
+        <Pressable
+          style={({ pressed }) => [styles.card, styles.savedCard, pressed && styles.cardPressed]}
+          testID="saved-scenarios-link"
+        >
+          <Text style={[styles.cardTitle, styles.savedCardTitle]}>Saved scenarios</Text>
+          <Text style={[styles.cardDescription, styles.savedCardDescription]}>
+            Your saved calculator runs — compare any two side by side
+          </Text>
+        </Pressable>
+      </Link>
       {CALCULATORS.map((calc) =>
         calc.ready ? (
           <Link key={calc.title} href={calc.href} asChild>
@@ -66,16 +77,19 @@ export default function CalculatorsScreen() {
           </View>
         ),
       )}
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  flex: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  container: {
     padding: spacing.md,
     gap: spacing.md,
+    paddingBottom: spacing.xl,
   },
   card: {
     backgroundColor: colors.surface,
@@ -90,6 +104,16 @@ const styles = StyleSheet.create({
   },
   cardDisabled: {
     opacity: 0.5,
+  },
+  savedCard: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  savedCardTitle: {
+    color: colors.textOnPrimary,
+  },
+  savedCardDescription: {
+    color: '#B9C8D8',
   },
   cardTitle: {
     ...typography.heading,

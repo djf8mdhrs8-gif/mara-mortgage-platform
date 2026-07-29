@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 
+import { SaveScenarioButton } from '@/components/SaveScenarioButton';
 import { colors, radii, spacing, typography } from '@/theme/tokens';
 
 function num(text: string): number {
@@ -154,6 +155,24 @@ export default function RefinanceScreen() {
             ))}
           </View>
         </View>
+
+        <SaveScenarioButton
+          type="REFINANCE"
+          defaultName="Refinance"
+          getInputs={() =>
+            result === null
+              ? null
+              : {
+                  currentBalance: num(balance),
+                  currentRatePct: num(currentRate),
+                  currentRemainingMonths: Math.round(num(remainingMonths)),
+                  newRatePct: num(newRate),
+                  newTermMonths: Math.round(num(newYears) * 12),
+                  closingCosts: num(closing),
+                  financeClosingCosts: financed,
+                }
+          }
+        />
 
         <View style={styles.results} testID="refi-results">
           {result === null ? (

@@ -1013,6 +1013,136 @@
         ]
       }
     },
+    "/api/v1/scenarios": {
+      "post": {
+        "operationId": "ScenariosController_save_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveScenarioDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Inputs are not valid for the calculator type"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "scenarios"
+        ]
+      },
+      "get": {
+        "operationId": "ScenariosController_list_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ScenarioDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "scenarios"
+        ]
+      }
+    },
+    "/api/v1/scenarios/{id}": {
+      "get": {
+        "operationId": "ScenariosController_getById_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found (or not yours)"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "scenarios"
+        ]
+      },
+      "delete": {
+        "operationId": "ScenariosController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": "Not found (or not yours)"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "scenarios"
+        ]
+      }
+    },
     "/api/v1/health": {
       "get": {
         "operationId": "HealthController_check_v1",
@@ -1697,6 +1827,86 @@
             "default": false
           }
         }
+      },
+      "ScenarioType": {
+        "type": "string",
+        "enum": [
+          "BASIC",
+          "EXTRA_PAYMENT",
+          "REFINANCE",
+          "AFFORDABILITY",
+          "RENT_VS_BUY",
+          "BUYDOWN",
+          "PROPERTY_ANALYSIS"
+        ]
+      },
+      "SaveScenarioDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ScenarioType"
+              }
+            ]
+          },
+          "name": {
+            "type": "string",
+            "example": "Maple St house, 20% down"
+          },
+          "inputs": {
+            "type": "object",
+            "description": "Calculator inputs exactly as the engine accepts them. Outputs are always recomputed server-side — client-computed results are never stored.",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "type",
+          "name",
+          "inputs"
+        ]
+      },
+      "ScenarioDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ScenarioType"
+              }
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "inputs": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "outputs": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Server-computed results (amortization schedules omitted for size — recompute on device when needed)."
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "name",
+          "inputs",
+          "outputs",
+          "createdAt",
+          "updatedAt"
+        ]
       },
       "HealthResponseDto": {
         "type": "object",

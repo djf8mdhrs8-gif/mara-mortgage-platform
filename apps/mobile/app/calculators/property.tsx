@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 
+import { SaveScenarioButton } from '@/components/SaveScenarioButton';
 import { colors, radii, spacing, typography } from '@/theme/tokens';
 
 function num(text: string): number {
@@ -135,6 +136,26 @@ export default function PropertyAnalysisScreen() {
           </View>
         </View>
         <Field label="PMI (%/yr, while under 20% down)" value={pmi} onChange={setPmi} placeholder="0.85" testID="prop-pmi" />
+
+        <SaveScenarioButton
+          type="PROPERTY_ANALYSIS"
+          defaultName={address.trim() !== '' ? address.trim() : 'Property analysis'}
+          getInputs={() =>
+            result === null
+              ? null
+              : {
+                  address: address.trim(),
+                  purchasePrice: num(price),
+                  annualRatePct: num(rate),
+                  termMonths: Math.round(num(termYears) * 12),
+                  propertyTaxAnnual: num(tax),
+                  homeInsuranceAnnual: num(insurance),
+                  hoaMonthly: num(hoa),
+                  pmiAnnualPct: num(pmi),
+                  closingCosts: num(closing),
+                }
+          }
+        />
 
         <View style={styles.results} testID="prop-results">
           {result === null ? (

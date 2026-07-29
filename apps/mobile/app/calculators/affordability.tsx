@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 
+import { SaveScenarioButton } from '@/components/SaveScenarioButton';
 import { colors, radii, spacing, typography } from '@/theme/tokens';
 
 function num(text: string): number {
@@ -131,6 +132,25 @@ export default function AffordabilityScreen() {
           </View>
         </View>
         <Field label="HOA ($/mo)" value={hoa} onChange={setHoa} placeholder="0" testID="afford-hoa" />
+
+        <SaveScenarioButton
+          type="AFFORDABILITY"
+          defaultName="Affordability"
+          getInputs={() =>
+            result === null
+              ? null
+              : {
+                  annualIncome: num(income),
+                  monthlyDebts: num(debts),
+                  downPayment: num(down),
+                  annualRatePct: num(rate),
+                  termMonths: Math.round(num(years) * 12),
+                  propertyTaxAnnualPct: num(taxPct),
+                  homeInsuranceAnnual: num(insAnnual),
+                  hoaMonthly: num(hoa),
+                }
+          }
+        />
 
         <View style={styles.results} testID="afford-results">
           {result === null ? (

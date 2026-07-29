@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 
+import { SaveScenarioButton } from '@/components/SaveScenarioButton';
 import { WealthChart } from '@/components/WealthChart';
 import { colors, radii, spacing, typography } from '@/theme/tokens';
 
@@ -176,6 +177,31 @@ export default function RentVsBuyScreen() {
             <Field label="Maintenance (%/yr)" value={maintPct} onChange={setMaintPct} placeholder="1" testID="rvb-maintenance" />
           </View>
         </Pair>
+
+        <SaveScenarioButton
+          type="RENT_VS_BUY"
+          defaultName="Rent vs. buy"
+          getInputs={() =>
+            result === null
+              ? null
+              : {
+                  purchasePrice: num(price),
+                  downPayment: { type: 'percent', value: num(downPct) },
+                  annualRatePct: num(rate),
+                  termMonths: Math.round(num(termYears) * 12),
+                  horizonYears: Math.round(num(horizon)),
+                  monthlyRent: num(rent),
+                  rentGrowthPct: num(rentGrowth),
+                  homeAppreciationPct: num(appreciation),
+                  investmentReturnPct: num(investReturn),
+                  propertyTaxAnnualPct: num(taxPct),
+                  homeInsuranceAnnualPct: num(insPct),
+                  maintenanceAnnualPct: num(maintPct),
+                  buyClosingCostsPct: 3,
+                  sellClosingCostsPct: num(sellPct),
+                }
+          }
+        />
 
         <View style={styles.results} testID="rvb-results">
           {result === null ? (
