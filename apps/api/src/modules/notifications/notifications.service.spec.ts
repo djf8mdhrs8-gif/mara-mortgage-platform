@@ -21,9 +21,25 @@ interface NotificationRow {
   sentAt: Date | null;
 }
 
+interface ScheduledRow {
+  id: string;
+  title: string;
+  body: string;
+  audience: string;
+  type: string;
+  sendAt: Date;
+  status: string;
+  recipients: number | null;
+  delivered: number | null;
+  sentAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 function makeFakes(outcomeFor: (token: string) => boolean) {
   const tokens: TokenRow[] = [];
   const notifications: NotificationRow[] = [];
+  const scheduled: ScheduledRow[] = [];
   const sentMessages: { to: string; title?: string }[] = [];
   let seq = 0;
 
@@ -75,6 +91,37 @@ function makeFakes(outcomeFor: (token: string) => boolean) {
         return Promise.resolve(row);
       },
     },
+    scheduledBroadcast: {
+      create: ({ data }: { data: Omit<ScheduledRow, 'id' | 'status' | 'recipients' | 'delivered' | 'sentAt' | 'createdAt' | 'updatedAt'> }) => {
+        const row: ScheduledRow = {
+          ...data,
+          id: `sb_${++seq}`,
+          status: 'PENDING',
+          recipients: null,
+          delivered: null,
+          sentAt: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        scheduled.push(row);
+        return Promise.resolve(row);
+      },
+      findMany: ({ where }: { where?: { status?: string; sendAt?: { lte: Date } } } = {}) =>
+        Promise.resolve(
+          scheduled.filter(
+            (s) =>
+              (where?.status === undefined || s.status === where.status) &&
+              (where?.sendAt === undefined || s.sendAt <= where.sendAt.lte),
+          ),
+        ),
+      findUnique: ({ where }: { where: { id: string } }) =>
+        Promise.resolve(scheduled.find((s) => s.id === where.id) ?? null),
+      update: ({ where, data }: { where: { id: string }; data: Partial<ScheduledRow> }) => {
+        const row = scheduled.find((s) => s.id === where.id);
+        if (row !== undefined) Object.assign(row, data, { updatedAt: new Date() });
+        return Promise.resolve(row);
+      },
+    },
   } as unknown as PrismaService;
 
   const transport = {
@@ -92,7 +139,7 @@ function makeFakes(outcomeFor: (token: string) => boolean) {
     },
   } as unknown as PushTransport;
 
-  return { prisma, transport, tokens, notifications, sentMessages };
+  return { prisma, transport, tokens, notifications, scheduled, sentMessages };
 }
 
 describe('NotificationsService broadcast', () => {
@@ -185,5 +232,87 @@ describe('NotificationsService', () => {
 
     expect(result.status).toBe('FAILED');
     expect(result.detail).toContain('DeviceNotRegistered');
+  });
+});
+
+describe('NotificationsService scheduled broadcasts', () => {
+  const future = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+
+  it('rejects past sendAt and queues future ones as PENDING', async () => {
+    const fakes = makeFakes(() => true);
+    const service = new NotificationsService(fakes.prisma, fakes.transport);
+
+    await expect(
+      service.schedule({
+        title: 'Late',
+        body: 'x',
+        audience: 'ALL',
+        sendAt: new Date(Date.now() - 1000).toISOString(),
+      }),
+    ).rejects.toThrowError('future');
+
+    const row = await service.schedule({
+      title: 'Rates dropping Monday',
+      body: 'Watch this space.',
+      audience: 'BORROWERS',
+      type: 'RATE_UPDATE',
+      sendAt: future,
+    });
+    expect(row.status).toBe('PENDING');
+    expect(row.type).toBe('RATE_UPDATE');
+  });
+
+  it('dispatchDueBroadcasts sends only due PENDING rows and records counts', async () => {
+    const fakes = makeFakes(() => true);
+    const service = new NotificationsService(fakes.prisma, fakes.transport);
+    await service.registerToken('user_a', { token: 'ExponentPushToken[a]', platform: 'ios' });
+
+    const due = await service.schedule({
+      title: 'Due',
+      body: 'now-ish',
+      audience: 'BORROWERS',
+      sendAt: new Date(Date.now() + 1000).toISOString(),
+    });
+    const notDue = await service.schedule({
+      title: 'Later',
+      body: 'tomorrow',
+      audience: 'ALL',
+      sendAt: future,
+    });
+
+    // Clock advanced past the first row only.
+    const dispatched = await service.dispatchDueBroadcasts(new Date(Date.now() + 5000));
+    expect(dispatched).toBe(1);
+
+    const list = await service.listScheduled();
+    const sent = list.find((s) => s.id === due.id)!;
+    expect(sent.status).toBe('SENT');
+    expect(sent.recipients).toBe(2); // both borrowers got Notification rows
+    expect(sent.delivered).toBe(1); // only user_a has a device
+    expect(list.find((s) => s.id === notDue.id)?.status).toBe('PENDING');
+
+    // Both borrowers have the in-app row, tagged with the scheduled type.
+    expect(
+      fakes.notifications.filter((n) => n.title === 'Due').map((n) => n.userId),
+    ).toEqual(['user_a', 'user_b']);
+  });
+
+  it('cancel only works while PENDING', async () => {
+    const fakes = makeFakes(() => true);
+    const service = new NotificationsService(fakes.prisma, fakes.transport);
+
+    const row = await service.schedule({
+      title: 'Cancel me',
+      body: 'x',
+      audience: 'ALL',
+      sendAt: new Date(Date.now() + 1000).toISOString(),
+    });
+    const cancelled = await service.cancelScheduled(row.id);
+    expect(cancelled.status).toBe('CANCELLED');
+
+    // Cancelled rows never dispatch, and cancelling twice is an error.
+    expect(await service.dispatchDueBroadcasts(new Date(Date.now() + 5000))).toBe(0);
+    await expect(service.cancelScheduled(row.id)).rejects.toThrowError('cancelled');
+    await expect(service.cancelScheduled('sb_missing')).rejects.toThrowError('not found');
   });
 });

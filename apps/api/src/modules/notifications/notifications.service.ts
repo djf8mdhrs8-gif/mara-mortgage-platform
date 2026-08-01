@@ -1,14 +1,31 @@
-import { Injectable, Logger } from '@nestjs/common';
-import type { NotificationType } from '@prisma/client';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import type { NotificationType, ScheduledBroadcast } from '@prisma/client';
 
 import {
   BroadcastDto,
   BroadcastResultDto,
   RegisterPushTokenDto,
+  ScheduleBroadcastDto,
+  ScheduledBroadcastDto,
   SendResultDto,
 } from './notifications.dto';
 import { PushTransport } from './push-transport.service';
 import { PrismaService } from '../../prisma/prisma.service';
+
+function toScheduledDto(row: ScheduledBroadcast): ScheduledBroadcastDto {
+  return {
+    id: row.id,
+    title: row.title,
+    body: row.body,
+    audience: row.audience,
+    type: row.type,
+    sendAt: row.sendAt.toISOString(),
+    status: row.status,
+    recipients: row.recipients,
+    delivered: row.delivered,
+    sentAt: row.sentAt?.toISOString() ?? null,
+  };
+}
 
 @Injectable()
 export class NotificationsService {
@@ -52,6 +69,82 @@ export class NotificationsService {
     }
 
     return { recipients: users.length, delivered, undelivered: users.length - delivered };
+  }
+
+  /** Queue a broadcast for the cron dispatcher. Must be in the future. */
+  async schedule(dto: ScheduleBroadcastDto): Promise<ScheduledBroadcastDto> {
+    const sendAt = new Date(dto.sendAt);
+    if (sendAt.getTime() <= Date.now()) {
+      throw new BadRequestException('sendAt must be in the future — use broadcast to send now');
+    }
+    const row = await this.prisma.scheduledBroadcast.create({
+      data: {
+        title: dto.title,
+        body: dto.body,
+        audience: dto.audience,
+        type: dto.type ?? 'GENERAL',
+        sendAt,
+      },
+    });
+    return toScheduledDto(row);
+  }
+
+  /** All scheduled broadcasts, soonest-pending first, then history. */
+  async listScheduled(): Promise<ScheduledBroadcastDto[]> {
+    const rows = await this.prisma.scheduledBroadcast.findMany({
+      orderBy: [{ status: 'asc' }, { sendAt: 'desc' }],
+    });
+    return rows.map(toScheduledDto);
+  }
+
+  /** Cancel a PENDING broadcast; sent/cancelled ones are immutable history. */
+  async cancelScheduled(id: string): Promise<ScheduledBroadcastDto> {
+    const row = await this.prisma.scheduledBroadcast.findUnique({ where: { id } });
+    if (row === null) {
+      throw new NotFoundException('scheduled broadcast not found');
+    }
+    if (row.status !== 'PENDING') {
+      throw new BadRequestException(`already ${row.status.toLowerCase()}`);
+    }
+    const updated = await this.prisma.scheduledBroadcast.update({
+      where: { id },
+      data: { status: 'CANCELLED' },
+    });
+    return toScheduledDto(updated);
+  }
+
+  /**
+   * Sends every due PENDING broadcast. Called by the minutely cron (and
+   * directly by tests). Each row is marked SENT with its counts even if
+   * device delivery partially failed — the Notification rows carry per-user
+   * status, and re-sending a whole broadcast would duplicate history.
+   */
+  async dispatchDueBroadcasts(now = new Date()): Promise<number> {
+    const due = await this.prisma.scheduledBroadcast.findMany({
+      where: { status: 'PENDING', sendAt: { lte: now } },
+    });
+    for (const row of due) {
+      const result = await this.broadcast({
+        title: row.title,
+        body: row.body,
+        audience: row.audience,
+        type: row.type as BroadcastDto['type'],
+      });
+      await this.prisma.scheduledBroadcast.update({
+        where: { id: row.id },
+        data: {
+          status: 'SENT',
+          sentAt: new Date(),
+          recipients: result.recipients,
+          delivered: result.delivered,
+        },
+      });
+      this.logger.log(
+        { scheduledBroadcastId: row.id, recipients: result.recipients },
+        'scheduled broadcast dispatched',
+      );
+    }
+    return due.length;
   }
 
   /** Notifies every staff account (loan officers + admins), except `excludeUserId`. */

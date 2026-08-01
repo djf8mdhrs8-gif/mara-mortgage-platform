@@ -148,6 +148,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/notifications/schedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["NotificationsController_schedule_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/scheduled": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["NotificationsController_listScheduled_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/scheduled/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["NotificationsController_cancelScheduled_v1"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/notifications/token": {
         parameters: {
             query?: never;
@@ -533,7 +581,7 @@ export interface components {
              * @default GENERAL
              * @enum {string}
              */
-            type: "GENERAL" | "RATE_UPDATE" | "EDUCATIONAL";
+            type: "GENERAL" | "RATE_UPDATE" | "EDUCATIONAL" | "CLOSING_REMINDER";
         };
         BroadcastResultDto: {
             /** @description Users targeted by the audience filter */
@@ -542,6 +590,38 @@ export interface components {
             delivered: number;
             /** @description Users recorded but with no successful device delivery yet */
             undelivered: number;
+        };
+        ScheduleBroadcastDto: {
+            /** @example Rates just dropped */
+            title: string;
+            /** @example 30-year rates fell this week — a great time to run your numbers. */
+            body: string;
+            /** @enum {string} */
+            audience: "ALL" | "BORROWERS" | "REALTORS";
+            /**
+             * @default GENERAL
+             * @enum {string}
+             */
+            type: "GENERAL" | "RATE_UPDATE" | "EDUCATIONAL" | "CLOSING_REMINDER";
+            /**
+             * @description When to send (ISO timestamp, must be in the future)
+             * @example 2026-08-04T14:00:00.000Z
+             */
+            sendAt: string;
+        };
+        ScheduledBroadcastDto: {
+            id: string;
+            title: string;
+            body: string;
+            /** @enum {string} */
+            audience: "ALL" | "BORROWERS" | "REALTORS";
+            type: string;
+            sendAt: string;
+            /** @enum {string} */
+            status: "PENDING" | "SENT" | "CANCELLED";
+            recipients: number | null;
+            delivered: number | null;
+            sentAt: string | null;
         };
         RegisterPushTokenDto: {
             /** @example ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx] */
@@ -1058,6 +1138,111 @@ export interface operations {
             };
             /** @description Admin only */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationsController_schedule_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ScheduleBroadcastDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScheduledBroadcastDto"];
+                };
+            };
+            /** @description sendAt must be in the future */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Admin only */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationsController_listScheduled_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScheduledBroadcastDto"][];
+                };
+            };
+            /** @description Admin only */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationsController_cancelScheduled_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScheduledBroadcastDto"];
+                };
+            };
+            /** @description Already sent or cancelled */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Admin only */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

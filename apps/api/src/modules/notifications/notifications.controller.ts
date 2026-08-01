@@ -1,10 +1,20 @@
-import { Body, Controller, HttpCode, Post, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiForbiddenResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiForbiddenResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 import {
   BroadcastDto,
   BroadcastResultDto,
   RegisterPushTokenDto,
+  ScheduleBroadcastDto,
+  ScheduledBroadcastDto,
   SendResultDto,
   SendTestNotificationDto,
 } from './notifications.dto';
@@ -30,6 +40,35 @@ export class NotificationsController {
   @ApiForbiddenResponse({ description: 'Admin only' })
   broadcast(@Body() dto: BroadcastDto): Promise<BroadcastResultDto> {
     return this.notifications.broadcast(dto);
+  }
+
+  /** Queue a broadcast for a future time; the scheduler sends it. */
+  @Post('schedule')
+  @Roles('ADMIN')
+  @ApiCreatedResponse({ type: ScheduledBroadcastDto })
+  @ApiBadRequestResponse({ description: 'sendAt must be in the future' })
+  @ApiForbiddenResponse({ description: 'Admin only' })
+  schedule(@Body() dto: ScheduleBroadcastDto): Promise<ScheduledBroadcastDto> {
+    return this.notifications.schedule(dto);
+  }
+
+  @Get('scheduled')
+  @Roles('ADMIN')
+  @ApiOkResponse({ type: [ScheduledBroadcastDto] })
+  @ApiForbiddenResponse({ description: 'Admin only' })
+  listScheduled(): Promise<ScheduledBroadcastDto[]> {
+    return this.notifications.listScheduled();
+  }
+
+  @Delete('scheduled/:id')
+  @Roles('ADMIN')
+  @HttpCode(200)
+  @ApiOkResponse({ type: ScheduledBroadcastDto })
+  @ApiBadRequestResponse({ description: 'Already sent or cancelled' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiForbiddenResponse({ description: 'Admin only' })
+  cancelScheduled(@Param('id') id: string): Promise<ScheduledBroadcastDto> {
+    return this.notifications.cancelScheduled(id);
   }
 
   @Post('token')

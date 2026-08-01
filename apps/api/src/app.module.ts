@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
 import { LoggerModule } from 'nestjs-pino';
@@ -44,6 +45,8 @@ import { PrismaModule } from './prisma/prisma.module';
     // Global rate limit — a generous ceiling for normal API use. Auth routes
     // carry much tighter per-route @Throttle overrides (see AuthController).
     ThrottlerModule.forRoot({ throttlers: [{ ttl: 60_000, limit: 100 }] }),
+    // Cron infrastructure for scheduled broadcasts (BroadcastSchedulerService).
+    ScheduleModule.forRoot(),
     PrismaModule,
     AuditModule,
     AuthModule,

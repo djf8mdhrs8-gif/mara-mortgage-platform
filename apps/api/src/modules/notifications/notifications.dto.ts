@@ -1,5 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsIn, IsNotEmpty, IsOptional, IsString, Matches, MaxLength } from 'class-validator';
+import {
+  IsDateString,
+  IsIn,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Matches,
+  MaxLength,
+} from 'class-validator';
 
 export class RegisterPushTokenDto {
   @ApiProperty({ example: 'ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]' })
@@ -47,10 +55,54 @@ export class BroadcastDto {
   @IsIn(BROADCAST_AUDIENCES)
   audience!: BroadcastAudience;
 
-  @ApiPropertyOptional({ enum: ['GENERAL', 'RATE_UPDATE', 'EDUCATIONAL'], default: 'GENERAL' })
+  @ApiPropertyOptional({
+    enum: ['GENERAL', 'RATE_UPDATE', 'EDUCATIONAL', 'CLOSING_REMINDER'],
+    default: 'GENERAL',
+  })
   @IsOptional()
-  @IsIn(['GENERAL', 'RATE_UPDATE', 'EDUCATIONAL'])
-  type?: 'GENERAL' | 'RATE_UPDATE' | 'EDUCATIONAL';
+  @IsIn(['GENERAL', 'RATE_UPDATE', 'EDUCATIONAL', 'CLOSING_REMINDER'])
+  type?: 'GENERAL' | 'RATE_UPDATE' | 'EDUCATIONAL' | 'CLOSING_REMINDER';
+}
+
+export class ScheduleBroadcastDto extends BroadcastDto {
+  @ApiProperty({
+    example: '2026-08-04T14:00:00.000Z',
+    description: 'When to send (ISO timestamp, must be in the future)',
+  })
+  @IsDateString()
+  sendAt!: string;
+}
+
+export class ScheduledBroadcastDto {
+  @ApiProperty()
+  id!: string;
+
+  @ApiProperty()
+  title!: string;
+
+  @ApiProperty()
+  body!: string;
+
+  @ApiProperty({ enum: BROADCAST_AUDIENCES })
+  audience!: BroadcastAudience;
+
+  @ApiProperty()
+  type!: string;
+
+  @ApiProperty()
+  sendAt!: string;
+
+  @ApiProperty({ enum: ['PENDING', 'SENT', 'CANCELLED'] })
+  status!: 'PENDING' | 'SENT' | 'CANCELLED';
+
+  @ApiProperty({ nullable: true, type: Number })
+  recipients!: number | null;
+
+  @ApiProperty({ nullable: true, type: Number })
+  delivered!: number | null;
+
+  @ApiProperty({ nullable: true, type: String })
+  sentAt!: string | null;
 }
 
 export class BroadcastResultDto {

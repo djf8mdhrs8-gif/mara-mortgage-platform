@@ -60,6 +60,18 @@ enum NotificationStatus {
   FAILED
 }
 
+enum BroadcastAudience {
+  ALL
+  BORROWERS
+  REALTORS
+}
+
+enum ScheduledBroadcastStatus {
+  PENDING
+  SENT
+  CANCELLED
+}
+
 enum AuditAction {
   LOGIN_SUCCESS
   LOGIN_FAILURE
@@ -255,6 +267,26 @@ model AuditLog {
   @@index([action, createdAt])
   @@index([targetType, targetId])
   @@map("audit_logs")
+}
+
+// Admin-scheduled push broadcasts: a cron dispatcher sends due PENDING rows
+// through the same path as immediate broadcasts, then records the outcome.
+model ScheduledBroadcast {
+  id         String                   @id @default(cuid())
+  title      String
+  body       String
+  audience   BroadcastAudience
+  type       NotificationType         @default(GENERAL)
+  sendAt     DateTime
+  status     ScheduledBroadcastStatus @default(PENDING)
+  recipients Int?
+  delivered  Int?
+  sentAt     DateTime?
+  createdAt  DateTime                 @default(now())
+  updatedAt  DateTime                 @updatedAt
+
+  @@index([status, sendAt])
+  @@map("scheduled_broadcasts")
 }
 
 // One thread per borrower/realtor with the loan team. Staff (LO/ADMIN)

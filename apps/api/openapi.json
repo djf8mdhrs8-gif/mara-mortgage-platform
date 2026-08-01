@@ -346,6 +346,124 @@
         ]
       }
     },
+    "/api/v1/notifications/schedule": {
+      "post": {
+        "operationId": "NotificationsController_schedule_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleBroadcastDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduledBroadcastDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "sendAt must be in the future"
+          },
+          "403": {
+            "description": "Admin only"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/api/v1/notifications/scheduled": {
+      "get": {
+        "operationId": "NotificationsController_listScheduled_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ScheduledBroadcastDto"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Admin only"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/api/v1/notifications/scheduled/{id}": {
+      "delete": {
+        "operationId": "NotificationsController_cancelScheduled_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduledBroadcastDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Already sent or cancelled"
+          },
+          "403": {
+            "description": "Admin only"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
     "/api/v1/notifications/token": {
       "post": {
         "operationId": "NotificationsController_registerToken_v1",
@@ -1654,7 +1772,8 @@
             "enum": [
               "GENERAL",
               "RATE_UPDATE",
-              "EDUCATIONAL"
+              "EDUCATIONAL",
+              "CLOSING_REMINDER"
             ],
             "default": "GENERAL"
           }
@@ -1685,6 +1804,108 @@
           "recipients",
           "delivered",
           "undelivered"
+        ]
+      },
+      "ScheduleBroadcastDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Rates just dropped"
+          },
+          "body": {
+            "type": "string",
+            "example": "30-year rates fell this week — a great time to run your numbers."
+          },
+          "audience": {
+            "type": "string",
+            "enum": [
+              "ALL",
+              "BORROWERS",
+              "REALTORS"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "GENERAL",
+              "RATE_UPDATE",
+              "EDUCATIONAL",
+              "CLOSING_REMINDER"
+            ],
+            "default": "GENERAL"
+          },
+          "sendAt": {
+            "type": "string",
+            "example": "2026-08-04T14:00:00.000Z",
+            "description": "When to send (ISO timestamp, must be in the future)"
+          }
+        },
+        "required": [
+          "title",
+          "body",
+          "audience",
+          "sendAt"
+        ]
+      },
+      "ScheduledBroadcastDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "audience": {
+            "type": "string",
+            "enum": [
+              "ALL",
+              "BORROWERS",
+              "REALTORS"
+            ]
+          },
+          "type": {
+            "type": "string"
+          },
+          "sendAt": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "SENT",
+              "CANCELLED"
+            ]
+          },
+          "recipients": {
+            "type": "number",
+            "nullable": true
+          },
+          "delivered": {
+            "type": "number",
+            "nullable": true
+          },
+          "sentAt": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "body",
+          "audience",
+          "type",
+          "sendAt",
+          "status",
+          "recipients",
+          "delivered",
+          "sentAt"
         ]
       },
       "RegisterPushTokenDto": {
