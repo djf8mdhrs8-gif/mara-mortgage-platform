@@ -138,8 +138,8 @@ User (borrower | realtor | loan_officer | admin)
  ├── AuthCredential (password hash, biometric device keys, refresh tokens)
  ├── Application (1:many)          — links to Arive loan ID once known
  │    └── Document (many)          — uploaded/required docs, status
- ├── SavedScenario (many)          — saved calculator runs, type + inputs + outputs (recomputed server-side on load, never trust cached client output for anything shown as authoritative)
- ├── SavedProperty (many)
+ ├── SavedScenario (many)          — saved calculator runs, type + inputs + outputs (recomputed server-side on load, never trust cached client output for anything shown as authoritative); `favorite` flag pins to the profile
+ │                                   (supersedes the once-planned SavedProperty model — a property IS a PROPERTY_ANALYSIS scenario with its address in the inputs; one table, one source of truth. Decided at M40.)
  ├── Notification (many)           — delivery status per user
  └── MessageThread (many) → Message (many)   — borrower ↔ loan officer
 

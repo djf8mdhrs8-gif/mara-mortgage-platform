@@ -1,8 +1,9 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { useAuthStore } from '@/features/auth/store';
 import { useLogout } from '@/features/auth/useAuth';
 import { useHealth } from '@/features/health/useHealth';
+import { FavoritesSection } from '@/features/scenarios/FavoritesSection';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { colors, radii, spacing, typography } from '@/theme/tokens';
 
@@ -35,28 +36,31 @@ export default function HomeScreen() {
   const logout = useLogout();
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.flex} contentContainerStyle={styles.container}>
       <Text style={styles.title}>
         {user !== null ? `Welcome, ${user.firstName}` : 'Mara Mortgage'}
       </Text>
       <Text style={styles.subtitle}>
         Your path from pre-qualification to closing starts here.
       </Text>
+      <FavoritesSection />
       <ApiStatusCard />
       <View style={styles.logout}>
         <PrimaryButton title="Sign out" onPress={() => logout.mutate()} loading={logout.isPending} />
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  flex: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
     backgroundColor: colors.background,
+  },
+  container: {
+    alignItems: 'center',
     padding: spacing.lg,
+    paddingTop: spacing.xl,
     gap: spacing.sm,
   },
   title: {
