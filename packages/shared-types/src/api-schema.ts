@@ -385,6 +385,22 @@ export interface paths {
         delete: operations["ScenariosController_remove_v1"];
         options?: never;
         head?: never;
+        patch: operations["ScenariosController_update_v1"];
+        trace?: never;
+    };
+    "/api/v1/scenarios/{id}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ScenariosController_exportPdf_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
         patch?: never;
         trace?: never;
     };
@@ -643,6 +659,7 @@ export interface components {
         };
         ScenarioDto: {
             id: string;
+            favorite: boolean;
             type: components["schemas"]["ScenarioType"];
             name: string;
             inputs: {
@@ -654,6 +671,10 @@ export interface components {
             };
             createdAt: string;
             updatedAt: string;
+        };
+        UpdateScenarioDto: {
+            /** @description Pin/unpin — favorites sort first in the list. */
+            favorite: boolean;
         };
         HealthResponseDto: {
             /** @enum {string} */
@@ -1556,6 +1577,65 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Not found (or not yours) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ScenariosController_update_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateScenarioDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScenarioDto"];
+                };
+            };
+            /** @description Not found (or not yours) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ScenariosController_exportPdf_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One-page client-shareable scenario summary */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
             /** @description Not found (or not yours) */
             404: {
                 headers: {

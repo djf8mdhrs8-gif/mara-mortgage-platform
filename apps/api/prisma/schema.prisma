@@ -160,10 +160,12 @@ model Document {
 }
 
 model SavedScenario {
-  id     String       @id @default(cuid())
-  userId String
-  type   ScenarioType
-  name   String
+  id       String       @id @default(cuid())
+  userId   String
+  type     ScenarioType
+  name     String
+  // Realtor workflow: pinned scenarios sort first in the saved list.
+  favorite Boolean      @default(false)
   // Calculator inputs/outputs are stored as JSON snapshots. Outputs are
   // recomputed server-side when shown as authoritative (see ARCHITECTURE.md §4).
   inputs  Json

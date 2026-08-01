@@ -47,6 +47,7 @@ function stripSchedules(outputs: Record<string, unknown>): Record<string, unknow
 function toDto(row: SavedScenario): ScenarioDto {
   return {
     id: row.id,
+    favorite: row.favorite,
     type: row.type,
     name: row.name,
     inputs: row.inputs as Record<string, unknown>,
@@ -84,13 +85,41 @@ export class ScenariosService {
     return toDto(row);
   }
 
-  /** Own scenarios only, newest first — no cross-user visibility, staff included. */
+  /** Own scenarios only — favorites first, then newest. No cross-user visibility. */
   async list(payload: AccessTokenPayload): Promise<ScenarioDto[]> {
     const rows = await this.prisma.savedScenario.findMany({
       where: { userId: payload.sub },
-      orderBy: { createdAt: 'desc' },
+      orderBy: [{ favorite: 'desc' }, { createdAt: 'desc' }],
     });
     return rows.map(toDto);
+  }
+
+  async update(
+    id: string,
+    payload: AccessTokenPayload,
+    changes: { favorite: boolean },
+  ): Promise<ScenarioDto> {
+    const row = await this.prisma.savedScenario.findUnique({ where: { id } });
+    if (row === null || row.userId !== payload.sub) {
+      throw new NotFoundException('scenario not found');
+    }
+    const updated = await this.prisma.savedScenario.update({
+      where: { id },
+      data: { favorite: changes.favorite },
+    });
+    return toDto(updated);
+  }
+
+  /**
+   * Authoritative outputs for documents: recomputed from stored inputs at
+   * read time, schedules included (unlike the stored, stripped copy).
+   */
+  recomputeOutputs(scenario: ScenarioDto): Record<string, unknown> {
+    try {
+      return ENGINES[scenario.type](scenario.inputs) as Record<string, unknown>;
+    } catch {
+      throw new BadRequestException('stored inputs no longer compute — re-save this scenario');
+    }
   }
 
   /** 404 (not 403) for other users' scenarios — no existence oracle. */

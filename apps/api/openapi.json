@@ -1116,6 +1116,52 @@
           "scenarios"
         ]
       },
+      "patch": {
+        "operationId": "ScenariosController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateScenarioDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found (or not yours)"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "scenarios"
+        ]
+      },
       "delete": {
         "operationId": "ScenariosController_remove_v1",
         "parameters": [
@@ -1129,6 +1175,37 @@
           }
         ],
         "responses": {
+          "404": {
+            "description": "Not found (or not yours)"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "scenarios"
+        ]
+      }
+    },
+    "/api/v1/scenarios/{id}/pdf": {
+      "get": {
+        "operationId": "ScenariosController_exportPdf_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One-page client-shareable scenario summary"
+          },
           "404": {
             "description": "Not found (or not yours)"
           }
@@ -1872,6 +1949,9 @@
           "id": {
             "type": "string"
           },
+          "favorite": {
+            "type": "boolean"
+          },
           "type": {
             "allOf": [
               {
@@ -1900,12 +1980,25 @@
         },
         "required": [
           "id",
+          "favorite",
           "type",
           "name",
           "inputs",
           "outputs",
           "createdAt",
           "updatedAt"
+        ]
+      },
+      "UpdateScenarioDto": {
+        "type": "object",
+        "properties": {
+          "favorite": {
+            "type": "boolean",
+            "description": "Pin/unpin — favorites sort first in the list."
+          }
+        },
+        "required": [
+          "favorite"
         ]
       },
       "HealthResponseDto": {

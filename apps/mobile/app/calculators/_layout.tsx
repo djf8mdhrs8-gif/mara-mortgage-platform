@@ -19,6 +19,7 @@ export default function CalculatorsLayout() {
       <Stack.Screen name="buydown" options={{ title: 'Rate Buydown' }} />
       <Stack.Screen name="property" options={{ title: 'Property Analysis' }} />
       <Stack.Screen name="saved" options={{ title: 'Saved Scenarios' }} />
+      <Stack.Screen name="quick" options={{ title: 'Quick Quote' }} />
     </Stack>
   );
 }

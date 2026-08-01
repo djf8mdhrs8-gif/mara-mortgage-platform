@@ -10,6 +10,7 @@ interface Row {
   userId: string;
   type: string;
   name: string;
+  favorite: boolean;
   inputs: unknown;
   outputs: unknown;
   createdAt: Date;
@@ -22,10 +23,11 @@ function makeFakePrisma() {
 
   const prisma = {
     savedScenario: {
-      create: ({ data }: { data: Omit<Row, 'id' | 'createdAt' | 'updatedAt'> }) => {
+      create: ({ data }: { data: Omit<Row, 'id' | 'favorite' | 'createdAt' | 'updatedAt'> }) => {
         const row: Row = {
           ...data,
           id: `scn_${++seq}`,
+          favorite: false,
           createdAt: new Date(2026, 0, seq), // deterministic, increasing
           updatedAt: new Date(2026, 0, seq),
         };
@@ -36,8 +38,17 @@ function makeFakePrisma() {
         Promise.resolve(
           rows
             .filter((r) => r.userId === where.userId)
-            .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()),
+            .sort(
+              (a, b) =>
+                Number(b.favorite) - Number(a.favorite) ||
+                b.createdAt.getTime() - a.createdAt.getTime(),
+            ),
         ),
+      update: ({ where, data }: { where: { id: string }; data: { favorite: boolean } }) => {
+        const row = rows.find((r) => r.id === where.id);
+        if (row !== undefined) row.favorite = data.favorite;
+        return Promise.resolve(row);
+      },
       findUnique: ({ where }: { where: { id: string } }) =>
         Promise.resolve(rows.find((r) => r.id === where.id) ?? null),
       delete: ({ where }: { where: { id: string } }) => {
@@ -135,6 +146,33 @@ describe('ScenariosService', () => {
     const aliceList = await service.list(alice);
     expect(aliceList.map((s) => s.name)).toEqual(['second', 'first']);
     expect(await service.list(bob)).toHaveLength(1);
+  });
+
+  it('favorites sort first and toggling is ownership-guarded', async () => {
+    const first = await service.save(alice, { type: 'BASIC', name: 'old', inputs: BASIC_INPUTS });
+    await service.save(alice, { type: 'BASIC', name: 'newer', inputs: BASIC_INPUTS });
+
+    const updated = await service.update(first.id, alice, { favorite: true });
+    expect(updated.favorite).toBe(true);
+
+    // The older-but-favorited scenario now leads the list.
+    expect((await service.list(alice)).map((s) => s.name)).toEqual(['old', 'newer']);
+
+    await expect(service.update(first.id, bob, { favorite: false })).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+  });
+
+  it('recomputeOutputs reproduces authoritative results (with schedules) from stored inputs', async () => {
+    const saved = await service.save(alice, {
+      type: 'EXTRA_PAYMENT',
+      name: 'extra',
+      inputs: { principal: 300_000, annualRatePct: 7, termMonths: 360, extraMonthly: 200 },
+    });
+
+    const outputs = service.recomputeOutputs(saved);
+    expect(outputs).toHaveProperty('schedule'); // full recompute, unlike the stored copy
+    expect(outputs).toMatchObject({ monthlyPayment: 1_995.91 });
   });
 
   it("getById/remove 404 on other users' scenarios; remove deletes own", async () => {

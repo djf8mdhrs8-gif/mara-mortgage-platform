@@ -5,6 +5,12 @@ import { colors, radii, spacing, typography } from '@/theme/tokens';
 
 const CALCULATORS = [
   {
+    href: '/calculators/quick',
+    title: 'Quick Quote',
+    description: 'Price, down, rate — a payment number in three fields',
+    ready: true,
+  },
+  {
     href: '/calculators/basic',
     title: 'Mortgage Payment',
     description: 'Monthly payment, cash to close, and full cost breakdown',

@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { exportScenarioPdf } from '@/features/scenarios/exportScenarioPdf';
 import { summarize, TYPE_LABELS } from '@/features/scenarios/summarize';
 import {
   useDeleteScenario,
   useScenarios,
+  useToggleFavorite,
   type Scenario,
 } from '@/features/scenarios/useScenarios';
 import { colors, radii, spacing, typography } from '@/theme/tokens';
@@ -21,7 +23,16 @@ function dateLabel(iso: string): string {
 export default function SavedScenariosScreen() {
   const { data, isLoading, isError } = useScenarios();
   const remove = useDeleteScenario();
+  const toggleFavorite = useToggleFavorite();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [sharingId, setSharingId] = useState<string | null>(null);
+
+  const share = (scenario: Scenario): void => {
+    setSharingId(scenario.id);
+    exportScenarioPdf(scenario.id, scenario.name)
+      .catch(() => undefined) // share-sheet dismissal and network errors both land here
+      .finally(() => setSharingId(null));
+  };
 
   const scenarios = data ?? [];
   const selected = scenarios.filter((s) => selectedIds.includes(s.id));
@@ -88,6 +99,17 @@ export default function SavedScenariosScreen() {
             testID={`saved-${scenario.id}`}
           >
             <View style={styles.cardHeader}>
+              <Pressable
+                onPress={() =>
+                  toggleFavorite.mutate({ id: scenario.id, favorite: !scenario.favorite })
+                }
+                hitSlop={10}
+                testID={`saved-star-${scenario.id}`}
+              >
+                <Text style={[styles.starText, scenario.favorite && styles.starActive]}>
+                  {scenario.favorite ? '★' : '☆'}
+                </Text>
+              </Pressable>
               <View style={styles.flex}>
                 <Text style={[styles.cardTitle, isSelected && styles.cardTitleSelected]}>
                   {scenario.name}
@@ -96,6 +118,16 @@ export default function SavedScenariosScreen() {
                   {TYPE_LABELS[scenario.type]} · {dateLabel(scenario.createdAt)}
                 </Text>
               </View>
+              <Pressable
+                onPress={() => share(scenario)}
+                hitSlop={10}
+                disabled={sharingId !== null}
+                testID={`saved-share-${scenario.id}`}
+              >
+                <Text style={[styles.shareText, isSelected && styles.cardTitleSelected]}>
+                  {sharingId === scenario.id ? '…' : 'Send'}
+                </Text>
+              </Pressable>
               <Pressable
                 onPress={() => {
                   setSelectedIds((current) => current.filter((id) => id !== scenario.id));
@@ -205,6 +237,21 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.textSecondary,
     paddingHorizontal: 4,
+  },
+  starText: {
+    fontSize: 20,
+    lineHeight: 24,
+    color: colors.textSecondary,
+  },
+  starActive: {
+    color: colors.accent,
+  },
+  shareText: {
+    ...typography.caption,
+    fontWeight: '700',
+    color: colors.primaryLight,
+    paddingHorizontal: 4,
+    paddingTop: 2,
   },
   compare: {
     marginTop: spacing.sm,

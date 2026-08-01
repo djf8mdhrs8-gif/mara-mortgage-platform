@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ScenarioType } from '@prisma/client';
-import { IsEnum, IsObject, IsString, Length } from 'class-validator';
+import { IsBoolean, IsEnum, IsObject, IsString, Length } from 'class-validator';
 
 export class SaveScenarioDto {
   @ApiProperty({ enum: ScenarioType, enumName: 'ScenarioType' })
@@ -22,9 +22,18 @@ export class SaveScenarioDto {
   inputs!: Record<string, unknown>;
 }
 
+export class UpdateScenarioDto {
+  @ApiProperty({ description: 'Pin/unpin — favorites sort first in the list.' })
+  @IsBoolean()
+  favorite!: boolean;
+}
+
 export class ScenarioDto {
   @ApiProperty()
   id!: string;
+
+  @ApiProperty()
+  favorite!: boolean;
 
   @ApiProperty({ enum: ScenarioType, enumName: 'ScenarioType' })
   type!: ScenarioType;

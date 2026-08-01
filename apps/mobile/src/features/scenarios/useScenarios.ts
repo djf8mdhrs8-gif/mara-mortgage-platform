@@ -15,6 +15,7 @@ export interface Scenario {
   id: string;
   type: ScenarioType;
   name: string;
+  favorite: boolean;
   inputs: Record<string, unknown>;
   outputs: Record<string, unknown>;
   createdAt: string;
@@ -46,6 +47,21 @@ export function useSaveScenario() {
         body: input as never,
       });
       if (error !== undefined) throw new Error('could not save scenario');
+      return data as unknown as Scenario;
+    },
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: KEY }),
+  });
+}
+
+export function useToggleFavorite() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { id: string; favorite: boolean }): Promise<Scenario> => {
+      const { data, error } = await api.PATCH('/api/v1/scenarios/{id}', {
+        params: { path: { id: input.id } },
+        body: { favorite: input.favorite },
+      });
+      if (error !== undefined) throw new Error('could not update scenario');
       return data as unknown as Scenario;
     },
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: KEY }),
