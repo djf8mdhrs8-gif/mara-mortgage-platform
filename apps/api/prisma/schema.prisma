@@ -269,6 +269,19 @@ model AuditLog {
   @@map("audit_logs")
 }
 
+// Admin-tunable calculator settings. Calculator rows carry `enabled`
+// (hub visibility); the special key 'assumptions' carries the shared
+// default inputs (rate, PMI, taxes, insurance) as JSON. Rows are created
+// lazily on first admin edit — absent rows mean code defaults.
+model CalculatorConfig {
+  key       String   @id
+  enabled   Boolean  @default(true)
+  data      Json?
+  updatedAt DateTime @updatedAt
+
+  @@map("calculator_configs")
+}
+
 // Admin-scheduled push broadcasts: a cron dispatcher sends due PENDING rows
 // through the same path as immediate broadcasts, then records the outcome.
 model ScheduledBroadcast {

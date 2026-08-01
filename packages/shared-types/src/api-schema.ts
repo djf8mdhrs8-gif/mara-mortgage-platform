@@ -276,6 +276,22 @@ export interface paths {
         patch: operations["ArticlesController_update_v1"];
         trace?: never;
     };
+    "/api/v1/calculators/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CalculatorsController_getConfig_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["CalculatorsController_updateConfig_v1"];
+        trace?: never;
+    };
     "/api/v1/calculators/amortization/pdf": {
         parameters: {
             query?: never;
@@ -500,6 +516,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/stats/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StatsController_overview_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/health": {
         parameters: {
             query?: never;
@@ -678,6 +710,49 @@ export interface components {
             /** @default false */
             published: boolean;
         };
+        AssumptionsDto: {
+            /**
+             * @description Default annual rate (%) prefilled in calculators
+             * @example 6.5
+             */
+            defaultRatePct?: number;
+            /**
+             * @description Default PMI (%/yr of loan) while LTV > 80%
+             * @example 0.85
+             */
+            pmiAnnualPct?: number;
+            /**
+             * @description Default property tax (%/yr of value)
+             * @example 1.1
+             */
+            propertyTaxAnnualPct?: number;
+            /**
+             * @description Default homeowners insurance ($/yr)
+             * @example 1500
+             */
+            homeInsuranceAnnual?: number;
+        };
+        CalculatorStateDto: {
+            /** @enum {string} */
+            key: "quick" | "basic" | "extra" | "refinance" | "affordability" | "rent-vs-buy" | "buydown" | "property";
+            /** @example Rate Buydown */
+            title: string;
+            enabled: boolean;
+        };
+        CalculatorConfigDto: {
+            /** @description Effective values — admin overrides merged over code defaults */
+            assumptions: components["schemas"]["AssumptionsDto"];
+            calculators: components["schemas"]["CalculatorStateDto"][];
+        };
+        CalculatorToggleDto: {
+            /** @enum {string} */
+            key: "quick" | "basic" | "extra" | "refinance" | "affordability" | "rent-vs-buy" | "buydown" | "property";
+            enabled: boolean;
+        };
+        UpdateCalculatorConfigDto: {
+            assumptions?: components["schemas"]["AssumptionsDto"];
+            calculators?: components["schemas"]["CalculatorToggleDto"][];
+        };
         AmortizationPdfRequestDto: {
             /**
              * @description Loan amount in dollars
@@ -832,6 +907,34 @@ export interface components {
         UpdateScenarioDto: {
             /** @description Pin/unpin — favorites sort first in the list. */
             favorite: boolean;
+        };
+        FunnelStageDto: {
+            /** @example Saved a scenario */
+            stage: string;
+            /** @description Distinct borrowers/realtors at this stage */
+            count: number;
+        };
+        StatsOverviewDto: {
+            users: {
+                [key: string]: number;
+            };
+            applicationsByStatus: {
+                [key: string]: number;
+            };
+            scenariosByType: {
+                [key: string]: number;
+            };
+            documentsByStatus: {
+                [key: string]: number;
+            };
+            /** @description Total chat messages across all threads */
+            messages: number;
+            /** @description Notification rows recorded (in-app history) */
+            notifications: number;
+            /** @description Notifications with at least one device delivery */
+            notificationsDelivered: number;
+            /** @description Sign-up → engagement → application funnel */
+            funnel: components["schemas"]["FunnelStageDto"][];
         };
         HealthResponseDto: {
             /** @enum {string} */
@@ -1410,6 +1513,55 @@ export interface operations {
             };
             /** @description Unknown article */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CalculatorsController_getConfig_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CalculatorConfigDto"];
+                };
+            };
+        };
+    };
+    CalculatorsController_updateConfig_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateCalculatorConfigDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CalculatorConfigDto"];
+                };
+            };
+            /** @description Admin only */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2042,6 +2194,32 @@ export interface operations {
             };
             /** @description Not found (or not yours) */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StatsController_overview_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatsOverviewDto"];
+                };
+            };
+            /** @description Admin only */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 
 import { SaveScenarioButton } from '@/components/SaveScenarioButton';
+import { calculatorDefaults } from '@/features/config/useCalculatorConfig';
 import { colors, radii, spacing, typography } from '@/theme/tokens';
 
 function num(text: string): number {
@@ -85,10 +86,11 @@ function CompareRow({
 }
 
 export default function RefinanceScreen() {
+  const [d] = useState(calculatorDefaults); // admin-tunable prefills
   const [balance, setBalance] = useState('250000');
   const [currentRate, setCurrentRate] = useState('7.5');
   const [remainingMonths, setRemainingMonths] = useState('300');
-  const [newRate, setNewRate] = useState('6.25');
+  const [newRate, setNewRate] = useState(String(d.defaultRatePct));
   const [newYears, setNewYears] = useState('30');
   const [closing, setClosing] = useState('6000');
   const [financed, setFinanced] = useState(false);

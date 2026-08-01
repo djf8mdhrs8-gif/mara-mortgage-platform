@@ -52,6 +52,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           <Link href="/analytics" style={styles.link}>
             Analytics
           </Link>
+          <Link href="/calculators" style={styles.link}>
+            Calculators
+          </Link>
         </div>
         <div style={styles.user}>
           <span style={styles.userName}>

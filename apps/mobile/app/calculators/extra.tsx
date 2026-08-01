@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 
 import { SaveScenarioButton } from '@/components/SaveScenarioButton';
+import { calculatorDefaults } from '@/features/config/useCalculatorConfig';
 import { colors, radii, spacing, typography } from '@/theme/tokens';
 
 function num(text: string): number {
@@ -73,8 +74,9 @@ function Field({
 }
 
 export default function ExtraPaymentScreen() {
+  const [d] = useState(calculatorDefaults); // admin-tunable prefills
   const [principal, setPrincipal] = useState('200000');
-  const [rate, setRate] = useState('6.5');
+  const [rate, setRate] = useState(String(d.defaultRatePct));
   const [years, setYears] = useState('30');
   const [extraMonthly, setExtraMonthly] = useState('');
   const [extraAnnual, setExtraAnnual] = useState('');

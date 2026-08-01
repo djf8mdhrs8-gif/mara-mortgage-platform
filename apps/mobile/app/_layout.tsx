@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 
 import { useAuthStore } from '@/features/auth/store';
+import { useCalculatorConfig } from '@/features/config/useCalculatorConfig';
 import { useBiometricLock } from '@/features/auth/useBiometricLock';
 import { useLogout } from '@/features/auth/useAuth';
 import { useSessionRestore } from '@/features/auth/useSessionRestore';
@@ -59,6 +60,14 @@ function RootLayout() {
   useSessionRestore();
   useAuthGate();
   usePushRegistration();
+
+  // Admin-tunable calculator settings — refetch whenever a session lands so
+  // hub visibility and default assumptions reflect the latest config.
+  const refreshConfig = useCalculatorConfig((s) => s.refresh);
+  const user = useAuthStore((s) => s.user);
+  useEffect(() => {
+    if (user !== null) void refreshConfig();
+  }, [user, refreshConfig]);
 
   const booting = status === 'restoring' || lock === 'pending';
 

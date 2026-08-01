@@ -1,53 +1,62 @@
 import { Link } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { useCalculatorConfig } from '@/features/config/useCalculatorConfig';
 import { track } from '@/lib/analytics';
 import { colors, radii, spacing, typography } from '@/theme/tokens';
 
 const CALCULATORS = [
   {
+    key: 'quick',
     href: '/calculators/quick',
     title: 'Quick Quote',
     description: 'Price, down, rate — a payment number in three fields',
     ready: true,
   },
   {
+    key: 'basic',
     href: '/calculators/basic',
     title: 'Mortgage Payment',
     description: 'Monthly payment, cash to close, and full cost breakdown',
     ready: true,
   },
   {
+    key: 'extra',
     href: '/calculators/extra',
     title: 'Extra Payments',
     description: 'See how extra payments cut years and interest off your loan',
     ready: true,
   },
   {
+    key: 'refinance',
     href: '/calculators/refinance',
     title: 'Refinance',
     description: 'Compare your current loan to a new one — savings and break-even',
     ready: true,
   },
   {
+    key: 'affordability',
     href: '/calculators/affordability',
     title: 'Affordability',
     description: 'How much home your income and debts support (28/36 rule)',
     ready: true,
   },
   {
+    key: 'rent-vs-buy',
     href: '/calculators/rent-vs-buy',
     title: 'Rent vs. Buy',
     description: 'Project your wealth over time on each path — with break-even year',
     ready: true,
   },
   {
+    key: 'buydown',
     href: '/calculators/buydown',
     title: 'Rate Buydown',
     description: '2-1 and 3-2-1 temporary buydowns, or permanent discount points',
     ready: true,
   },
   {
+    key: 'property',
     href: '/calculators/property',
     title: 'Property Analysis',
     description: 'Any address + its real costs — payment and cash across down-payment options',
@@ -56,6 +65,9 @@ const CALCULATORS = [
 ] as const;
 
 export default function CalculatorsScreen() {
+  const disabledKeys = useCalculatorConfig((s) => s.disabledKeys);
+  const visible = CALCULATORS.filter((calc) => !disabledKeys.includes(calc.key));
+
   return (
     <ScrollView style={styles.flex} contentContainerStyle={styles.container}>
       <Link href="/calculators/saved" asChild>
@@ -69,7 +81,7 @@ export default function CalculatorsScreen() {
           </Text>
         </Pressable>
       </Link>
-      {CALCULATORS.map((calc) =>
+      {visible.map((calc) =>
         calc.ready ? (
           <Link key={calc.title} href={calc.href} asChild>
             <Pressable

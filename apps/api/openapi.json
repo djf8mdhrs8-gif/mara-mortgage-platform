@@ -687,6 +687,69 @@
         ]
       }
     },
+    "/api/v1/calculators/config": {
+      "get": {
+        "operationId": "CalculatorsController_getConfig_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalculatorConfigDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "calculators"
+        ]
+      },
+      "patch": {
+        "operationId": "CalculatorsController_updateConfig_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCalculatorConfigDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalculatorConfigDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Admin only"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "calculators"
+        ]
+      }
+    },
     "/api/v1/calculators/amortization/pdf": {
       "post": {
         "operationId": "CalculatorsController_exportPdf_v1",
@@ -1520,6 +1583,35 @@
         ]
       }
     },
+    "/api/v1/stats/overview": {
+      "get": {
+        "operationId": "StatsController_overview_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatsOverviewDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Admin only"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "stats"
+        ]
+      }
+    },
     "/api/v1/health": {
       "get": {
         "operationId": "HealthController_check_v1",
@@ -2069,6 +2161,123 @@
           }
         }
       },
+      "AssumptionsDto": {
+        "type": "object",
+        "properties": {
+          "defaultRatePct": {
+            "type": "number",
+            "example": 6.5,
+            "description": "Default annual rate (%) prefilled in calculators"
+          },
+          "pmiAnnualPct": {
+            "type": "number",
+            "example": 0.85,
+            "description": "Default PMI (%/yr of loan) while LTV > 80%"
+          },
+          "propertyTaxAnnualPct": {
+            "type": "number",
+            "example": 1.1,
+            "description": "Default property tax (%/yr of value)"
+          },
+          "homeInsuranceAnnual": {
+            "type": "number",
+            "example": 1500,
+            "description": "Default homeowners insurance ($/yr)"
+          }
+        }
+      },
+      "CalculatorStateDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "enum": [
+              "quick",
+              "basic",
+              "extra",
+              "refinance",
+              "affordability",
+              "rent-vs-buy",
+              "buydown",
+              "property"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "example": "Rate Buydown"
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "key",
+          "title",
+          "enabled"
+        ]
+      },
+      "CalculatorConfigDto": {
+        "type": "object",
+        "properties": {
+          "assumptions": {
+            "description": "Effective values — admin overrides merged over code defaults",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssumptionsDto"
+              }
+            ]
+          },
+          "calculators": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CalculatorStateDto"
+            }
+          }
+        },
+        "required": [
+          "assumptions",
+          "calculators"
+        ]
+      },
+      "CalculatorToggleDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "enum": [
+              "quick",
+              "basic",
+              "extra",
+              "refinance",
+              "affordability",
+              "rent-vs-buy",
+              "buydown",
+              "property"
+            ]
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "key",
+          "enabled"
+        ]
+      },
+      "UpdateCalculatorConfigDto": {
+        "type": "object",
+        "properties": {
+          "assumptions": {
+            "$ref": "#/components/schemas/AssumptionsDto"
+          },
+          "calculators": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CalculatorToggleDto"
+            }
+          }
+        }
+      },
       "AmortizationPdfRequestDto": {
         "type": "object",
         "properties": {
@@ -2504,6 +2713,81 @@
         },
         "required": [
           "favorite"
+        ]
+      },
+      "FunnelStageDto": {
+        "type": "object",
+        "properties": {
+          "stage": {
+            "type": "string",
+            "example": "Saved a scenario"
+          },
+          "count": {
+            "type": "number",
+            "description": "Distinct borrowers/realtors at this stage"
+          }
+        },
+        "required": [
+          "stage",
+          "count"
+        ]
+      },
+      "StatsOverviewDto": {
+        "type": "object",
+        "properties": {
+          "users": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            }
+          },
+          "applicationsByStatus": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            }
+          },
+          "scenariosByType": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            }
+          },
+          "documentsByStatus": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            }
+          },
+          "messages": {
+            "type": "number",
+            "description": "Total chat messages across all threads"
+          },
+          "notifications": {
+            "type": "number",
+            "description": "Notification rows recorded (in-app history)"
+          },
+          "notificationsDelivered": {
+            "type": "number",
+            "description": "Notifications with at least one device delivery"
+          },
+          "funnel": {
+            "description": "Sign-up → engagement → application funnel",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FunnelStageDto"
+            }
+          }
+        },
+        "required": [
+          "users",
+          "applicationsByStatus",
+          "scenariosByType",
+          "documentsByStatus",
+          "messages",
+          "notifications",
+          "notificationsDelivered",
+          "funnel"
         ]
       },
       "HealthResponseDto": {

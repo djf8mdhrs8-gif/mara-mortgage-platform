@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 
 import { SaveScenarioButton } from '@/components/SaveScenarioButton';
+import { calculatorDefaults } from '@/features/config/useCalculatorConfig';
 import { colors, radii, spacing, typography } from '@/theme/tokens';
 
 /** Parses user-typed currency/number text; '' → 0 for optional fields. */
@@ -67,15 +68,16 @@ function ResultRow({ label, value, muted = false }: { label: string; value: stri
 }
 
 export default function BasicCalculatorScreen() {
+  const [d] = useState(calculatorDefaults); // admin-tunable prefills
   const [price, setPrice] = useState('250000');
   const [down, setDown] = useState('20');
   const [downMode, setDownMode] = useState<'percent' | 'amount'>('percent');
-  const [rate, setRate] = useState('6.5');
+  const [rate, setRate] = useState(String(d.defaultRatePct));
   const [years, setYears] = useState('30');
   const [taxAnnual, setTaxAnnual] = useState('');
   const [insAnnual, setInsAnnual] = useState('');
   const [hoa, setHoa] = useState('');
-  const [pmiPct, setPmiPct] = useState('');
+  const [pmiPct, setPmiPct] = useState(String(d.pmiAnnualPct));
   const [closing, setClosing] = useState('');
 
   const result: BasicMortgageResult | null = useMemo(() => {

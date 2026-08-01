@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 
 import { SaveScenarioButton } from '@/components/SaveScenarioButton';
+import { calculatorDefaults } from '@/features/config/useCalculatorConfig';
 import { colors, radii, spacing, typography } from '@/theme/tokens';
 
 function num(text: string): number {
@@ -69,13 +70,14 @@ function ResultRow({ label, value, muted = false }: { label: string; value: stri
 }
 
 export default function AffordabilityScreen() {
+  const [d] = useState(calculatorDefaults); // admin-tunable prefills
   const [income, setIncome] = useState('96000');
   const [debts, setDebts] = useState('500');
   const [down, setDown] = useState('40000');
-  const [rate, setRate] = useState('6.5');
+  const [rate, setRate] = useState(String(d.defaultRatePct));
   const [years, setYears] = useState('30');
-  const [taxPct, setTaxPct] = useState('1.2');
-  const [insAnnual, setInsAnnual] = useState('1500');
+  const [taxPct, setTaxPct] = useState(String(d.propertyTaxAnnualPct));
+  const [insAnnual, setInsAnnual] = useState(String(d.homeInsuranceAnnual));
   const [hoa, setHoa] = useState('');
 
   const result: AffordabilityResult | null = useMemo(() => {

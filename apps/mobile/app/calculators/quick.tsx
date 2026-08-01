@@ -12,12 +12,8 @@ import {
 } from 'react-native';
 
 import { SaveScenarioButton } from '@/components/SaveScenarioButton';
+import { calculatorDefaults } from '@/features/config/useCalculatorConfig';
 import { colors, radii, spacing, typography } from '@/theme/tokens';
-
-// Open-house defaults: taxes 1.1% of price, insurance $1,500/yr — shown as
-// estimates and adjustable in the full Mortgage Payment calculator.
-const TAX_PCT = 1.1;
-const INSURANCE_ANNUAL = 1_500;
 
 function num(text: string): number {
   const cleaned = text.replace(/[$,%\s,]/g, '');
@@ -40,9 +36,12 @@ function money(value: number, cents = true): string {
  * answer, minimal typing, built for quoting a payment mid-conversation.
  */
 export default function QuickQuoteScreen() {
+  // Admin-tunable assumptions, captured once per mount (taxes/insurance
+  // estimates and the prefilled rate — see the admin Calculators page).
+  const [d] = useState(calculatorDefaults);
   const [price, setPrice] = useState('400000');
   const [downPct, setDownPct] = useState('20');
-  const [rate, setRate] = useState('6.5');
+  const [rate, setRate] = useState(String(d.defaultRatePct));
   const [termYears, setTermYears] = useState<15 | 30>(30);
 
   const engineInputs = useMemo(
@@ -51,10 +50,10 @@ export default function QuickQuoteScreen() {
       downPayment: { type: 'percent' as const, value: num(downPct) },
       annualRatePct: num(rate),
       termMonths: termYears * 12,
-      propertyTaxAnnual: (num(price) * TAX_PCT) / 100,
-      homeInsuranceAnnual: INSURANCE_ANNUAL,
+      propertyTaxAnnual: (num(price) * d.propertyTaxAnnualPct) / 100,
+      homeInsuranceAnnual: d.homeInsuranceAnnual,
     }),
-    [price, downPct, rate, termYears],
+    [price, downPct, rate, termYears, d],
   );
 
   const result = useMemo(() => {
@@ -155,7 +154,8 @@ export default function QuickQuoteScreen() {
         />
 
         <Text style={styles.footnote}>
-          Taxes estimated at {TAX_PCT}% of price and insurance at {money(INSURANCE_ANNUAL, false)}/yr —
+          Taxes estimated at {d.propertyTaxAnnualPct}% of price and insurance at{' '}
+          {money(d.homeInsuranceAnnual, false)}/yr —
           fine for a conversation, adjustable in the full Mortgage Payment calculator. Estimates only,
           not a loan offer.
         </Text>

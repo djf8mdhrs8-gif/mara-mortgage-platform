@@ -12,6 +12,7 @@ import {
 
 import { SaveScenarioButton } from '@/components/SaveScenarioButton';
 import { WealthChart } from '@/components/WealthChart';
+import { calculatorDefaults } from '@/features/config/useCalculatorConfig';
 import { colors, radii, spacing, typography } from '@/theme/tokens';
 
 function num(text: string): number {
@@ -64,16 +65,17 @@ function Pair({ children }: { children: React.ReactNode }) {
 }
 
 export default function RentVsBuyScreen() {
+  const [d] = useState(calculatorDefaults); // admin-tunable prefills
   const [price, setPrice] = useState('400000');
   const [downPct, setDownPct] = useState('20');
-  const [rate, setRate] = useState('6.5');
+  const [rate, setRate] = useState(String(d.defaultRatePct));
   const [termYears, setTermYears] = useState('30');
   const [rent, setRent] = useState('2200');
   const [rentGrowth, setRentGrowth] = useState('3');
   const [horizon, setHorizon] = useState('10');
   const [appreciation, setAppreciation] = useState('3');
   const [investReturn, setInvestReturn] = useState('7');
-  const [taxPct, setTaxPct] = useState('1.1');
+  const [taxPct, setTaxPct] = useState(String(d.propertyTaxAnnualPct));
   const [insPct, setInsPct] = useState('0.5');
   const [maintPct, setMaintPct] = useState('1');
   const [sellPct, setSellPct] = useState('6');

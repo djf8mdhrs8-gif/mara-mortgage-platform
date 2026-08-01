@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 
 import { SaveScenarioButton } from '@/components/SaveScenarioButton';
+import { calculatorDefaults } from '@/features/config/useCalculatorConfig';
 import { colors, radii, spacing, typography } from '@/theme/tokens';
 
 function num(text: string): number {
@@ -63,14 +64,15 @@ function Field({
 }
 
 export default function PropertyAnalysisScreen() {
+  const [d] = useState(calculatorDefaults); // admin-tunable prefills
   const [address, setAddress] = useState('');
   const [price, setPrice] = useState('375000');
-  const [rate, setRate] = useState('6.5');
+  const [rate, setRate] = useState(String(d.defaultRatePct));
   const [termYears, setTermYears] = useState('30');
   const [tax, setTax] = useState('4100');
   const [insurance, setInsurance] = useState('1800');
   const [hoa, setHoa] = useState('0');
-  const [pmi, setPmi] = useState('0.85');
+  const [pmi, setPmi] = useState(String(d.pmiAnnualPct));
   const [closing, setClosing] = useState('9000');
   const [selected, setSelected] = useState(1); // default highlight: 10% down
 
