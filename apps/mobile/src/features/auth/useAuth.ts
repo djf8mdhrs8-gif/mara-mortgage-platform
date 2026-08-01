@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 
 import { useAuthStore } from './store';
+import { identify, resetAnalytics, track } from '@/lib/analytics';
 import { api } from '@/lib/api';
 
 interface RegisterInput {
@@ -29,7 +30,10 @@ export function useRegister() {
       }
       return data;
     },
-    onSuccess: (data) => setSession(data),
+    onSuccess: (data) => {
+      setSession(data);
+      identify(data.user.id, data.user.role);
+    },
   });
 }
 
@@ -45,7 +49,11 @@ export function useLogin() {
       }
       return data;
     },
-    onSuccess: (data) => setSession(data),
+    onSuccess: (data) => {
+      setSession(data);
+      identify(data.user.id, data.user.role);
+      track('signed_in');
+    },
   });
 }
 
@@ -59,6 +67,9 @@ export function useLogout() {
         await api.POST('/api/v1/auth/logout', { body: { refreshToken } }).catch(() => undefined);
       }
     },
-    onSettled: () => clearSession(),
+    onSettled: () => {
+      resetAnalytics();
+      clearSession();
+    },
   });
 }

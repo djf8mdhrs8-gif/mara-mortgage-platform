@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { track } from '@/lib/analytics';
 import { api } from '@/lib/api';
 
 export interface ChatMessage {
@@ -39,6 +40,9 @@ export function useSendMessage() {
       if (error !== undefined) throw new Error('could not send message');
       return data as unknown as ChatMessage;
     },
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: KEY }),
+    onSuccess: () => {
+      track('message_sent');
+      void queryClient.invalidateQueries({ queryKey: KEY });
+    },
   });
 }

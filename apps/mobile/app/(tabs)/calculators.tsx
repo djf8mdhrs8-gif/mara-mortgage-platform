@@ -1,6 +1,7 @@
 import { Link } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { track } from '@/lib/analytics';
 import { colors, radii, spacing, typography } from '@/theme/tokens';
 
 const CALCULATORS = [
@@ -71,7 +72,10 @@ export default function CalculatorsScreen() {
       {CALCULATORS.map((calc) =>
         calc.ready ? (
           <Link key={calc.title} href={calc.href} asChild>
-            <Pressable style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}>
+            <Pressable
+              onPress={() => track('calculator_opened', { calculator: calc.title })}
+              style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+            >
               <Text style={styles.cardTitle}>{calc.title}</Text>
               <Text style={styles.cardDescription}>{calc.description}</Text>
             </Pressable>

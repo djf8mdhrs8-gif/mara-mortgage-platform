@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { track } from '@/lib/analytics';
 import { api } from '@/lib/api';
 
 export type ScenarioType =
@@ -49,7 +50,10 @@ export function useSaveScenario() {
       if (error !== undefined) throw new Error('could not save scenario');
       return data as unknown as Scenario;
     },
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: KEY }),
+    onSuccess: (scenario) => {
+      track('scenario_saved', { type: scenario.type });
+      void queryClient.invalidateQueries({ queryKey: KEY });
+    },
   });
 }
 

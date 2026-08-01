@@ -17,6 +17,7 @@ import { LoanProgramsModule } from './modules/loan-programs/loan-programs.module
 import { MessagesModule } from './modules/messages/messages.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { ScenariosModule } from './modules/scenarios/scenarios.module';
+import { StatsModule } from './modules/stats/stats.module';
 import { StorageModule } from './storage/storage.module';
 import { HealthModule } from './modules/health/health.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -60,6 +61,7 @@ import { PrismaModule } from './prisma/prisma.module';
     MessagesModule,
     NotificationsModule,
     ScenariosModule,
+    StatsModule,
     HealthModule,
   ],
   providers: [
