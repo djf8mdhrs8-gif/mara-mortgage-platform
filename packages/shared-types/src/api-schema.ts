@@ -356,6 +356,54 @@ export interface paths {
         patch: operations["LoanProgramsController_update_v1"];
         trace?: never;
     };
+    "/api/v1/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MessagesController_getOwnThread_v1"];
+        put?: never;
+        post: operations["MessagesController_send_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/messages/threads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MessagesController_listThreads_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/messages/threads/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MessagesController_getThread_v1"];
+        put?: never;
+        post: operations["MessagesController_reply_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/scenarios": {
         parameters: {
             query?: never;
@@ -645,6 +693,35 @@ export interface components {
             sortOrder: number;
             /** @default false */
             published: boolean;
+        };
+        MessageDto: {
+            id: string;
+            threadId: string;
+            senderId: string;
+            /** @example Mara */
+            senderName: string;
+            /** @description true when the sender is the loan team (LO/admin) */
+            fromStaff: boolean;
+            body: string;
+            createdAt: string;
+        };
+        ThreadMessagesDto: {
+            threadId: string;
+            messages: components["schemas"]["MessageDto"][];
+        };
+        SendMessageDto: {
+            /** @example Hi Mara — is the appraisal scheduled yet? */
+            body: string;
+        };
+        ThreadSummaryDto: {
+            id: string;
+            userId: string;
+            /** @example Sarah Buyer */
+            userName: string;
+            lastMessage: string | null;
+            lastMessageAt: string | null;
+            /** @description Borrower messages the staff side has not read yet */
+            unreadCount: number;
         };
         /** @enum {string} */
         ScenarioType: "BASIC" | "EXTRA_PAYMENT" | "REFINANCE" | "AFFORDABILITY" | "RENT_VS_BUY" | "BUYDOWN" | "PROPERTY_ANALYSIS";
@@ -1481,6 +1558,148 @@ export interface operations {
                 content?: never;
             };
             /** @description Unknown program */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MessagesController_getOwnThread_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ThreadMessagesDto"];
+                };
+            };
+        };
+    };
+    MessagesController_send_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendMessageDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageDto"];
+                };
+            };
+        };
+    };
+    MessagesController_listThreads_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ThreadSummaryDto"][];
+                };
+            };
+            /** @description Requires loan officer or admin role */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MessagesController_getThread_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ThreadMessagesDto"];
+                };
+            };
+            /** @description Requires loan officer or admin role */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Thread not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MessagesController_reply_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendMessageDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageDto"];
+                };
+            };
+            /** @description Requires loan officer or admin role */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Thread not found */
             404: {
                 headers: {
                     [name: string]: unknown;

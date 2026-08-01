@@ -54,6 +54,23 @@ export default function ContactScreen() {
         </Text>
       </View>
 
+      <Link href="/messages" asChild>
+        <Pressable
+          accessibilityRole="button"
+          style={({ pressed }) => [styles.row, styles.rowPrimary, pressed && styles.rowPressed]}
+          testID="contact-messages"
+        >
+          <Text style={[styles.glyph, styles.glyphPrimary]}>✎</Text>
+          <View style={styles.rowText}>
+            <Text style={[styles.rowTitle, styles.rowTitlePrimary]}>Secure message</Text>
+            <Text style={[styles.rowDetail, styles.rowDetailPrimary]}>
+              Chat with the loan team in-app — replies arrive as notifications
+            </Text>
+          </View>
+          <Text style={[styles.chevron, styles.rowTitlePrimary]}>›</Text>
+        </Pressable>
+      </Link>
+
       <ActionRow
         glyph="☏"
         title="Call"
@@ -140,6 +157,19 @@ const styles = StyleSheet.create({
   },
   rowPressed: {
     backgroundColor: colors.border,
+  },
+  rowPrimary: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  rowTitlePrimary: {
+    color: colors.textOnPrimary,
+  },
+  rowDetailPrimary: {
+    color: '#B9C8D8',
+  },
+  glyphPrimary: {
+    color: colors.textOnPrimary,
   },
   glyph: {
     fontSize: 22,

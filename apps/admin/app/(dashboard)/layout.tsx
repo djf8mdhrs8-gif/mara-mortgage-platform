@@ -46,6 +46,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           <Link href="/notifications" style={styles.link}>
             Notifications
           </Link>
+          <Link href="/messages" style={styles.link}>
+            Messages
+          </Link>
         </div>
         <div style={styles.user}>
           <span style={styles.userName}>

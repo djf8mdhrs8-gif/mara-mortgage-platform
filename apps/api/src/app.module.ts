@@ -13,6 +13,7 @@ import { CalculatorsModule } from './modules/calculators/calculators.module';
 import { ContentModule } from './modules/content/content.module';
 import { DocumentsModule } from './modules/documents/documents.module';
 import { LoanProgramsModule } from './modules/loan-programs/loan-programs.module';
+import { MessagesModule } from './modules/messages/messages.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { ScenariosModule } from './modules/scenarios/scenarios.module';
 import { StorageModule } from './storage/storage.module';
@@ -53,6 +54,7 @@ import { PrismaModule } from './prisma/prisma.module';
     ContentModule,
     DocumentsModule,
     LoanProgramsModule,
+    MessagesModule,
     NotificationsModule,
     ScenariosModule,
     HealthModule,

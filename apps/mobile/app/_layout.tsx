@@ -82,6 +82,15 @@ function RootLayout() {
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="(auth)" />
+          <Stack.Screen
+            name="messages"
+            options={{
+              headerShown: true,
+              title: 'Messages',
+              headerStyle: { backgroundColor: '#0F2A4A' },
+              headerTintColor: '#FFFFFF',
+            }}
+          />
         </Stack>
       )}
     </QueryClientProvider>
