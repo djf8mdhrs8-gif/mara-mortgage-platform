@@ -135,14 +135,14 @@ const PROGRAMS = [
 const CONTENT_BLOCKS = [
   {
     key: 'compliance.footer',
-    body: 'Certified Home Loans · NMLS #1806779 · Equal Housing Lender',
+    body: 'Mara — NMLS #1925279 · Certified Home Loans NMLS #1806779 · Equal Housing Lender',
   },
   {
     key: 'compliance.disclosures',
     body: P(
-      'Certified Home Loans · Company NMLS #1806779. Verify our licensing at nmlsconsumeraccess.org.',
+      'Mara — NMLS #1925279 · Certified Home Loans, Company NMLS #1806779. Verify our licensing at nmlsconsumeraccess.org.',
       'Equal Housing Lender. We do business in accordance with the Federal Fair Housing Act and the Equal Credit Opportunity Act.',
-      '[PLACEHOLDER — pending compliance review: list of states where licensed, individual originator NMLS numbers, and any state-specific disclosure text.]',
+      '[PLACEHOLDER — pending compliance review: list of states where licensed and any state-specific disclosure text.]',
       'All calculations in this app are estimates for planning purposes only and are not a loan offer, rate quote, or commitment to lend. Rates, programs, and guidelines change without notice. Contact us for a personalized quote.',
     ),
   },

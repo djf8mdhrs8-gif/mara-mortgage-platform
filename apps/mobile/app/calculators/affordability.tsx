@@ -167,7 +167,7 @@ export default function AffordabilityScreen() {
                 {money(result.maxHomePrice, false)}
               </Text>
               <Text style={styles.limitNote}>
-                Limited by the {result.limitedBy === 'front-end' ? '28% housing' : '36% total-debt'}{' '}
+                Limited by the {result.limitedBy === 'front-end' ? '45% housing' : '50% total-debt'}{' '}
                 ratio ({result.limitedBy})
               </Text>
               <View style={styles.divider} />
@@ -185,7 +185,7 @@ export default function AffordabilityScreen() {
               </View>
               <Text style={styles.capsNote}>
                 Budgets: housing cap {money(result.frontEndCap)}/mo · total-debt cap{' '}
-                {money(result.backEndCap)}/mo (28/36 rule)
+                {money(result.backEndCap)}/mo (45/50 qualifying ratios)
               </Text>
             </>
           )}

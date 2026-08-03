@@ -22,7 +22,7 @@ export default function LoginScreen() {
   const login = useLogin();
   const compliance = useContentBlock(
     'compliance.footer',
-    'Certified Home Loans · NMLS #1806779 · Equal Housing Lender',
+    'Mara — NMLS #1925279 · Certified Home Loans NMLS #1806779 · Equal Housing Lender',
   );
   const { control, handleSubmit } = useForm<FormValues>({
     resolver: zodResolver(schema),

@@ -5,7 +5,7 @@ import { useContentBlock } from '@/features/content/useContentBlock';
 import { colors, spacing, typography } from '@/theme/tokens';
 
 const FALLBACK = [
-  'Certified Home Loans · Company NMLS #1806779. Verify our licensing at nmlsconsumeraccess.org.',
+  'Mara — NMLS #1925279 · Certified Home Loans, Company NMLS #1806779. Verify our licensing at nmlsconsumeraccess.org.',
   'Equal Housing Lender. We do business in accordance with the Federal Fair Housing Act and the Equal Credit Opportunity Act.',
   'All calculations in this app are estimates for planning purposes only and are not a loan offer, rate quote, or commitment to lend.',
 ].join('\n\n');

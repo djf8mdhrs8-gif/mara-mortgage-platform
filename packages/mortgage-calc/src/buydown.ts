@@ -1,10 +1,11 @@
 import { buildAmortization, monthlyPayment } from './amortization';
 import { fromCents, toCents } from './money';
 
-export type TemporaryBuydownType = '2-1' | '3-2-1';
+export type TemporaryBuydownType = '1-0' | '2-1' | '3-2-1';
 
 /** Rate reductions per buydown year, in percentage points. */
 const BUYDOWN_STEPS: Record<TemporaryBuydownType, number[]> = {
+  '1-0': [1],
   '2-1': [2, 1],
   '3-2-1': [3, 2, 1],
 };

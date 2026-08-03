@@ -53,6 +53,27 @@ describe('calculateTemporaryBuydown', () => {
     expect(result.buydownCost).toBe(13_756.44); // 6,763.92 + 4,625.40 + 2,367.12
   });
 
+  it('computes the 1-0 schedule: one subsidized year at note − 1%', () => {
+    const result = calculateTemporaryBuydown({
+      loanAmount: 300_000,
+      annualRatePct: 7,
+      termMonths: 360,
+      type: '1-0',
+    });
+
+    expect(result.years).toEqual([
+      {
+        year: 1,
+        ratePct: 6,
+        payment: 1_798.65,
+        monthlySavings: 197.26,
+        yearlySavings: 2_367.12,
+      },
+    ]);
+    expect(result.buydownCost).toBe(2_367.12);
+    expect(result.notePayment).toBe(1_995.91);
+  });
+
   it('rejects loans that cannot support the buydown', () => {
     const base = { loanAmount: 300_000, termMonths: 360 } as const;
     // Note rate below the largest step would need a negative rate.

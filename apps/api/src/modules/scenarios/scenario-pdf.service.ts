@@ -12,7 +12,7 @@ const BORDER = '#E1E6EC';
 const MARGIN = 48;
 
 // Matches apps/mobile/src/config/contact.ts — the business card footer.
-const CONTACT_LINE = 'Mara · Certified Home Loans · NMLS #1806779';
+const CONTACT_LINE = 'Mara — NMLS #1925279 · Certified Home Loans NMLS #1806779';
 const CONTACT_DETAIL = '(954) 612-5535 · missa@certifiedhomeloans.com';
 
 const TYPE_LABELS: Record<ScenarioType, string> = {

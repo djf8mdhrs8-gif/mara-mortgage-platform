@@ -38,6 +38,7 @@ describe('ScenarioPdfService', () => {
     expect(text).toContain('MapleStrefi');
     expect(text).toContain('$197.26');
     expect(text).toContain('NMLS#1806779');
+    expect(text).toContain('NMLS#1925279');
     expect(text).toContain('notaloanoffer');
   });
 

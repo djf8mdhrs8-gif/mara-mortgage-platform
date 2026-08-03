@@ -117,7 +117,7 @@ export default function ContactScreen() {
       </View>
 
       <Text style={styles.footnote}>
-        {CONTACT.company} · NMLS #1806779 · Equal Housing Lender{'\n'}
+        {CONTACT.name} — NMLS #1925279 · {CONTACT.company} NMLS #1806779 · Equal Housing Lender{'\n'}
         <Link href="/legal" style={styles.legalLink} testID="contact-legal">
           Licensing & disclosures
         </Link>

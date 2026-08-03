@@ -38,7 +38,7 @@ const CALCULATORS = [
     key: 'affordability',
     href: '/calculators/affordability',
     title: 'Affordability',
-    description: 'How much home your income and debts support (28/36 rule)',
+    description: 'How much home your income and debts support (45/50 ratios)',
     ready: true,
   },
   {
@@ -52,7 +52,7 @@ const CALCULATORS = [
     key: 'buydown',
     href: '/calculators/buydown',
     title: 'Rate Buydown',
-    description: '2-1 and 3-2-1 temporary buydowns, or permanent discount points',
+    description: '1-0, 2-1, and 3-2-1 temporary buydowns, or permanent discount points',
     ready: true,
   },
   {

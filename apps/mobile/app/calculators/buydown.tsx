@@ -19,7 +19,7 @@ import {
 import { SaveScenarioButton } from '@/components/SaveScenarioButton';
 import { colors, radii, spacing, typography } from '@/theme/tokens';
 
-type Mode = '2-1' | '3-2-1' | 'permanent';
+type Mode = '1-0' | '2-1' | '3-2-1' | 'permanent';
 
 function num(text: string): number {
   const cleaned = text.replace(/[$,%\s,]/g, '');
@@ -117,7 +117,7 @@ export default function BuydownScreen() {
     >
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         <View style={styles.toggle}>
-          {(['2-1', '3-2-1', 'permanent'] as const).map((m) => (
+          {(['1-0', '2-1', '3-2-1', 'permanent'] as const).map((m) => (
             <Pressable
               key={m}
               onPress={() => setMode(m)}
@@ -133,9 +133,11 @@ export default function BuydownScreen() {
         <Text style={styles.modeHint}>
           {mode === 'permanent'
             ? 'Pay discount points once for a lower rate over the whole loan.'
-            : mode === '2-1'
-              ? 'Rate starts 2% lower in year 1 and 1% lower in year 2, then returns to the note rate.'
-              : 'Rate starts 3% lower, then 2%, then 1%, then returns to the note rate.'}
+            : mode === '1-0'
+              ? 'Rate starts 1% lower in year 1, then returns to the note rate.'
+              : mode === '2-1'
+                ? 'Rate starts 2% lower in year 1 and 1% lower in year 2, then returns to the note rate.'
+                : 'Rate starts 3% lower, then 2%, then 1%, then returns to the note rate.'}
         </Text>
 
         <Text style={styles.section}>Loan</Text>

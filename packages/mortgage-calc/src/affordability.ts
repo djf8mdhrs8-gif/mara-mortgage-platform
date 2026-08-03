@@ -17,9 +17,9 @@ export interface AffordabilityInputs {
   homeInsuranceAnnual?: number;
   /** HOA dues per month (default 0). */
   hoaMonthly?: number;
-  /** Front-end (housing) DTI cap percentage (default 28). */
+  /** Front-end (housing) DTI cap percentage (default 45 — the shop's qualifying ratio). */
   frontEndPct?: number;
-  /** Back-end (total debt) DTI cap percentage (default 36). */
+  /** Back-end (total debt) DTI cap percentage (default 50 — the shop's qualifying ratio). */
   backEndPct?: number;
 }
 
@@ -41,7 +41,8 @@ export interface AffordabilityResult {
 }
 
 /**
- * Classic DTI affordability (28/36 rule by default):
+ * DTI affordability (45/50 qualifying ratios by default, per Mara — the
+ * conservative classic 28/36 remains available via frontEndPct/backEndPct):
  *   housing budget = min(frontPct·income/12, backPct·income/12 − debts)
  * Inverted to a price given that taxes scale with price:
  *   budget − ins/12 − HOA = f·(price − down) + taxRate/12·price
@@ -58,8 +59,8 @@ export function calculateAffordability(inputs: AffordabilityInputs): Affordabili
     propertyTaxAnnualPct = 1.1,
     homeInsuranceAnnual = 1500,
     hoaMonthly = 0,
-    frontEndPct = 28,
-    backEndPct = 36,
+    frontEndPct = 45,
+    backEndPct = 50,
   } = inputs;
 
   if (!Number.isFinite(annualIncome) || annualIncome <= 0) {
