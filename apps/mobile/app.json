@@ -40,7 +40,8 @@
           "image": "./assets/branding/splash-logo.png",
           "imageWidth": 220
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true

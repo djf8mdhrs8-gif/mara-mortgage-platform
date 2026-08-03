@@ -100,6 +100,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/applications/arive-link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ApplicationsController_ariveLink_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/applications/{id}": {
         parameters: {
             query?: never;
@@ -597,6 +613,15 @@ export interface components {
             status: "DRAFT" | "SUBMITTED" | "PROCESSING" | "UNDERWRITING" | "CONDITIONALLY_APPROVED" | "CLEAR_TO_CLOSE" | "CLOSED" | "CANCELLED";
             createdAt: string;
             updatedAt: string;
+        };
+        AriveHandoffDto: {
+            /** @description Arive borrower portal URL where the 1003 application is completed */
+            url: string;
+            /**
+             * @description PORTAL = borrower authenticates on Arive’s side
+             * @enum {string}
+             */
+            mode: "PORTAL";
         };
         UpdateApplicationStatusDto: {
             /** @enum {string} */
@@ -1147,6 +1172,25 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApplicationDto"];
+                };
+            };
+        };
+    };
+    ApplicationsController_ariveLink_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AriveHandoffDto"];
                 };
             };
         };

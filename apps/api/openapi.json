@@ -218,6 +218,32 @@
         ]
       }
     },
+    "/api/v1/applications/arive-link": {
+      "get": {
+        "operationId": "ApplicationsController_ariveLink_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AriveHandoffDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "applications"
+        ]
+      }
+    },
     "/api/v1/applications/{id}": {
       "get": {
         "operationId": "ApplicationsController_getById_v1",
@@ -1817,6 +1843,26 @@
           "status",
           "createdAt",
           "updatedAt"
+        ]
+      },
+      "AriveHandoffDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Arive borrower portal URL where the 1003 application is completed"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "PORTAL"
+            ],
+            "description": "PORTAL = borrower authenticates on Arive’s side"
+          }
+        },
+        "required": [
+          "url",
+          "mode"
         ]
       },
       "UpdateApplicationStatusDto": {

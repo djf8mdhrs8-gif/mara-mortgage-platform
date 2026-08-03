@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
@@ -8,8 +8,9 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
-import { ApplicationDto, UpdateApplicationStatusDto } from './applications.dto';
+import { ApplicationDto, AriveHandoffDto, UpdateApplicationStatusDto } from './applications.dto';
 import { ApplicationsService } from './applications.service';
+import { ARIVE_ADAPTER, type AriveAdapter } from './arive.adapter';
 import { AccessTokenPayload } from '../auth/auth.service';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -21,7 +22,10 @@ import { RolesGuard } from '../auth/roles.guard';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('applications')
 export class ApplicationsController {
-  constructor(private readonly applications: ApplicationsService) {}
+  constructor(
+    private readonly applications: ApplicationsService,
+    @Inject(ARIVE_ADAPTER) private readonly arive: AriveAdapter,
+  ) {}
 
   @Post()
   @ApiCreatedResponse({ type: ApplicationDto })
@@ -33,6 +37,13 @@ export class ApplicationsController {
   @ApiOkResponse({ type: [ApplicationDto] })
   list(@CurrentUser() user: AccessTokenPayload): Promise<ApplicationDto[]> {
     return this.applications.list(user);
+  }
+
+  // Static route declared before ':id' so the param route can't capture it.
+  @Get('arive-link')
+  @ApiOkResponse({ type: AriveHandoffDto })
+  ariveLink(): AriveHandoffDto {
+    return this.arive.getHandoff();
   }
 
   @Get(':id')

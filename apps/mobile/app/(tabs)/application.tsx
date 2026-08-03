@@ -1,11 +1,16 @@
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
 
 import {
   StatusTimeline,
   type ApplicationStatus,
 } from '@/features/applications/StatusTimeline';
 import { DocumentsSection } from '@/features/documents/DocumentsSection';
-import { useApplications, useStartApplication } from '@/features/applications/useApplications';
+import {
+  useApplications,
+  useAriveLink,
+  useStartApplication,
+} from '@/features/applications/useApplications';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { colors, radii, spacing, typography } from '@/theme/tokens';
 
@@ -20,8 +25,22 @@ function formatDate(iso: string): string {
 export default function ApplicationScreen() {
   const { data, isPending, isError, refetch, isRefetching } = useApplications();
   const start = useStartApplication();
+  const ariveLink = useAriveLink();
 
   const latest = data?.[0];
+
+  const openPortal = () => {
+    const url = ariveLink.data?.url;
+    if (url !== undefined) {
+      void WebBrowser.openBrowserAsync(url);
+    }
+  };
+
+  const handleStart = () => {
+    // Record the application locally (status tracking lives here), then hand
+    // off to Arive's secure portal where the actual 1003 is completed.
+    start.mutate(undefined, { onSuccess: openPortal });
+  };
 
   return (
     <ScrollView
@@ -39,11 +58,11 @@ export default function ApplicationScreen() {
           <Text style={styles.emptyTitle}>Ready when you are</Text>
           <Text style={styles.emptyDetail}>
             Start your mortgage application and track every milestone here — from submission to
-            clear-to-close.
+            clear-to-close. You’ll complete the application itself in our secure loan portal.
           </Text>
           <PrimaryButton
             title="Start my application"
-            onPress={() => start.mutate()}
+            onPress={handleStart}
             loading={start.isPending}
           />
           {start.isError ? <Text style={styles.error}>{start.error.message}</Text> : null}
@@ -57,6 +76,24 @@ export default function ApplicationScreen() {
               {latest.ariveLoanId !== null ? ` · Loan #${latest.ariveLoanId}` : ''}
             </Text>
           </View>
+          {latest.status === 'DRAFT' ? (
+            <View style={styles.portalCard}>
+              <Text style={styles.portalTitle}>Finish your application</Text>
+              <Text style={styles.portalDetail}>
+                Complete your loan application in our secure portal. Your progress there is saved
+                as you go.
+              </Text>
+              <PrimaryButton
+                title="Open application portal"
+                onPress={openPortal}
+                loading={ariveLink.isPending}
+              />
+            </View>
+          ) : (
+            <Pressable onPress={openPortal} style={styles.portalLinkRow}>
+              <Text style={styles.portalLink}>Open the loan portal ↗</Text>
+            </Pressable>
+          )}
           <StatusTimeline status={latest.status as ApplicationStatus} />
           <DocumentsSection applicationId={latest.id} />
           <Text style={styles.footnote}>
@@ -116,5 +153,29 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.textSecondary,
     marginTop: spacing.sm,
+  },
+  portalCard: {
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderWidth: 1,
+    borderRadius: radii.md,
+    padding: spacing.lg,
+    gap: spacing.md,
+  },
+  portalTitle: {
+    ...typography.heading,
+    color: colors.textPrimary,
+  },
+  portalDetail: {
+    ...typography.body,
+    color: colors.textSecondary,
+  },
+  portalLinkRow: {
+    alignSelf: 'flex-start',
+  },
+  portalLink: {
+    ...typography.body,
+    color: colors.primary,
+    fontWeight: '600',
   },
 });
