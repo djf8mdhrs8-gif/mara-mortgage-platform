@@ -6,7 +6,6 @@
     "scheme": "maramortgage",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "icon": "./assets/branding/icon.png",
     "ios": {
       "supportsTablet": false,
@@ -18,7 +17,6 @@
     },
     "android": {
       "package": "com.maramortgage.app",
-      "edgeToEdgeEnabled": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/branding/icon-adaptive.png",
         "backgroundColor": "#FFFFFF"
