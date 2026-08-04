@@ -148,6 +148,38 @@ const CONTENT_BLOCKS = [
   },
 ];
 
+/**
+ * Production bootstrap: creates the first ADMIN account when ADMIN_EMAIL and
+ * ADMIN_PASSWORD are set (a fresh deployed database has no users, so Mara
+ * couldn't sign into the admin site otherwise). Never overwrites an existing
+ * account, and does nothing when the env vars are absent (local dev).
+ */
+const seedAdmin = async () => {
+  const email = process.env.ADMIN_EMAIL?.toLowerCase().trim();
+  const password = process.env.ADMIN_PASSWORD;
+  if (!email || !password) return;
+  if (password.length < 12) {
+    throw new Error('ADMIN_PASSWORD must be at least 12 characters');
+  }
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing) {
+    console.log(`admin bootstrap: ${email} already exists (role ${existing.role}) — skipped`);
+    return;
+  }
+  const argon2 = await import('argon2');
+  const passwordHash = await argon2.default.hash(password, { type: argon2.default.argon2id });
+  await prisma.user.create({
+    data: {
+      email,
+      firstName: process.env.ADMIN_FIRST_NAME ?? 'Mara',
+      lastName: process.env.ADMIN_LAST_NAME ?? 'Admin',
+      role: 'ADMIN',
+      credential: { create: { passwordHash } },
+    },
+  });
+  console.log(`admin bootstrap: created ADMIN account ${email}`);
+};
+
 const main = async () => {
   for (const block of CONTENT_BLOCKS) {
     await prisma.contentBlock.upsert({
@@ -164,6 +196,7 @@ const main = async () => {
       update: { title: program.title, summary: program.summary, content: program.content, sortOrder: program.sortOrder },
     });
   }
+  await seedAdmin();
   const count = await prisma.loanProgram.count();
   console.log(`seeded ${PROGRAMS.length} programs (table now has ${count})`);
 };

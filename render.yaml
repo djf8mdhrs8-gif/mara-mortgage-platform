@@ -1,0 +1,74 @@
+# One-click deployment blueprint for Render (https://render.com).
+# New → Blueprint → connect this repo → apply. See DEPLOYMENT.md for the
+# post-deploy checklist (URLs, seeding, admin account).
+#
+# If any service name is taken, Render appends a suffix to its URL —
+# afterwards update WEB_ORIGINS / EXPO_PUBLIC_API_URL / NEXT_PUBLIC_API_URL
+# to the real URLs and redeploy the affected services.
+
+databases:
+  - name: mara-db
+    plan: free
+    databaseName: mara
+    user: mara
+
+services:
+  # ---- API (NestJS + Prisma, Docker) ----
+  - type: web
+    name: mara-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: mara-db
+          property: connectionString
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: NODE_ENV
+        value: production
+      - key: WEB_ORIGINS
+        value: https://mara-app.onrender.com,https://mara-admin.onrender.com
+      # Ephemeral on the free plan — document uploads survive until the next
+      # deploy/restart. Swap StorageService to R2/S3 (or add a paid disk)
+      # before real borrowers upload documents. See DEPLOYMENT.md.
+      - key: FILE_STORAGE_DIR
+        value: /tmp/storage
+      # Optional (activate when the account exists):
+      # - key: SENTRY_DSN
+      #   sync: false
+
+  # ---- Borrower web app (Expo static export) ----
+  - type: web
+    name: mara-app
+    runtime: static
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm --filter @mara/mortgage-calc build && pnpm --filter @mara/shared-types build && cd apps/mobile && npx expo export --platform web
+    staticPublishPath: apps/mobile/dist
+    envVars:
+      - key: NODE_VERSION
+        value: 22.11.0
+      - key: EXPO_PUBLIC_API_URL
+        value: https://mara-api.onrender.com
+    routes:
+      # expo-router static export emits per-route HTML; this catches client-side
+      # routes (e.g. /calculators/quick refreshes) that have no file.
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+  # ---- Admin site (Next.js) ----
+  - type: web
+    name: mara-admin
+    runtime: node
+    plan: free
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm --filter @mara/admin... build
+    startCommand: cd apps/admin && npx next start --port $PORT
+    envVars:
+      - key: NODE_VERSION
+        value: 22.11.0
+      - key: NEXT_PUBLIC_API_URL
+        value: https://mara-api.onrender.com
+      - key: API_URL
+        value: https://mara-api.onrender.com

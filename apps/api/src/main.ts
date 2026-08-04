@@ -30,9 +30,18 @@ async function bootstrap(): Promise<void> {
   );
   app.enableShutdownHooks();
 
-  // Dev-only CORS so the Expo web preview (different port) can call the API.
-  // Production origins are locked down when we deploy (see ARCHITECTURE.md §6).
-  if (process.env.NODE_ENV !== 'production') {
+  // CORS: dev is permissive so the Expo web preview (different port) can call
+  // the API; production allows exactly the origins listed in WEB_ORIGINS
+  // (comma-separated — the deployed borrower web app + admin site).
+  if (process.env.NODE_ENV === 'production') {
+    const webOrigins = (process.env.WEB_ORIGINS ?? '')
+      .split(',')
+      .map((origin) => origin.trim())
+      .filter((origin) => origin.length > 0);
+    if (webOrigins.length > 0) {
+      app.enableCors({ origin: webOrigins });
+    }
+  } else {
     app.enableCors();
   }
 
@@ -55,7 +64,8 @@ async function bootstrap(): Promise<void> {
   }
 
   const config = app.get(ConfigService);
-  const port = config.get<number>('API_PORT', 3001);
+  // PaaS hosts (Render/Fly/Heroku) inject PORT; API_PORT is the local dev knob.
+  const port = config.get<number>('PORT') ?? config.get<number>('API_PORT', 3001);
   await app.listen(port);
 }
 
