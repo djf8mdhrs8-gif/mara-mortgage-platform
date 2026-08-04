@@ -60,11 +60,11 @@ Render's Starter plan ($7/mo per service) removes it.
 
 ## Known interim limitations (before real borrowers)
 
-- **Document uploads are ephemeral.** The free API instance has no persistent
-  disk (`FILE_STORAGE_DIR=/tmp/storage`), so uploaded documents vanish on
-  deploy/restart. Before borrowers upload real documents: swap
-  `StorageService` to Cloudflare R2/S3 (its interface was designed for this),
-  or attach a paid persistent disk to `mara-api`.
+- **Document uploads are ephemeral until S3/R2 is configured.** The free API
+  instance has no persistent disk (`FILE_STORAGE_DIR=/tmp/storage`), so
+  uploaded documents vanish on deploy/restart. The fix is config-only — see
+  "Durable document storage" below; do it before borrowers upload real
+  documents.
 - **Push notifications** need the installed app (Expo push tokens) — on the
   website, everything still lands in the in-app notification history and
   Messages, there's just no phone banner.
@@ -72,6 +72,29 @@ Render's Starter plan ($7/mo per service) removes it.
   session security (short-lived tokens, refresh rotation).
 - The **rate-limit and CORS** protections are active in production; CORS only
   admits the two site origins via `WEB_ORIGINS`.
+
+## Durable document storage (Cloudflare R2 — do before real borrower uploads)
+
+The API's storage driver is chosen by env vars: set `S3_BUCKET` and documents
+go to any S3-compatible bucket instead of the local disk. Cloudflare R2 has a
+free tier (10 GB) with no egress fees:
+
+1. Cloudflare dashboard → **R2 Object Storage** → Create bucket (e.g.
+   `mara-documents`; location Automatic).
+2. R2 → **Manage API tokens** → Create API token → permission **Object Read &
+   Write**, scoped to that bucket → note the Access Key ID + Secret Access Key.
+3. Render → `mara-api` → Environment → add:
+   - `S3_BUCKET` = `mara-documents`
+   - `S3_ENDPOINT` = `https://<account-id>.r2.cloudflarestorage.com` (shown on
+     the bucket page)
+   - `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` = the token values
+4. Save → the API redeploys. The boot log prints
+   `document storage: S3-compatible bucket "mara-documents"` — upload a
+   document and it now survives deploys and restarts.
+
+AWS S3 works the same way (omit `S3_ENDPOINT`, set `S3_REGION`). Documents
+uploaded before the switch were on the ephemeral disk and are not migrated —
+ask borrowers to re-upload anything from before, or do the switch first.
 
 ## When the phone apps ship (M45)
 

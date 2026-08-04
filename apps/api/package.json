@@ -16,6 +16,7 @@
     "prisma:seed": "node prisma/seed.mjs"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1102.0",
     "@mara/mortgage-calc": "workspace:*",
     "@mara/shared-types": "workspace:*",
     "@nestjs/common": "^11.0.0",
