@@ -14,6 +14,18 @@ updates:
         update-types:
           - minor
           - patch
+    ignore:
+      # Expo SDK pins these exactly (`npx expo install --check` is the source
+      # of truth); bumps outside the pin break native/EAS builds — verified
+      # 2026-08-04 when the grouped PR misaligned six of them. They update
+      # together via `npx expo install --fix` on SDK upgrades instead.
+      - dependency-name: expo
+      - dependency-name: expo-*
+      - dependency-name: "@expo/*"
+      - dependency-name: react
+      - dependency-name: react-dom
+      - dependency-name: react-native
+      - dependency-name: react-native-*
 
   - package-ecosystem: github-actions
     directory: /
