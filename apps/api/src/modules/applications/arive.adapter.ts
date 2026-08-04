@@ -25,10 +25,12 @@ export interface AriveAdapter {
 export const ARIVE_ADAPTER = 'ARIVE_ADAPTER';
 
 /**
- * Mara's hosted borrower portal, from the Domain Settings section of her
- * Arive POS App Config (subdomain = company NMLS #1806779).
+ * Mara's borrower registration link, provided from her Arive POS App Config
+ * (2026-08-05): subdomain = company NMLS #1806779, path = her individual
+ * NMLS #1925279 — so borrowers who register land in HER pipeline rather
+ * than on the company root.
  */
-const DEFAULT_PORTAL_URL = 'https://1806779.my1003app.com';
+const DEFAULT_PORTAL_URL = 'https://1806779.my1003app.com/1925279/register';
 
 @Injectable()
 export class AriveWebViewAdapter implements AriveAdapter {

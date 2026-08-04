@@ -7,10 +7,10 @@ describe('AriveWebViewAdapter', () => {
     delete process.env.ARIVE_PORTAL_URL;
   });
 
-  it('defaults to Mara’s hosted 1003 portal', () => {
+  it('defaults to Mara’s LO-specific 1003 registration link', () => {
     const adapter = new AriveWebViewAdapter();
     expect(adapter.getHandoff()).toEqual({
-      url: 'https://1806779.my1003app.com',
+      url: 'https://1806779.my1003app.com/1925279/register',
       mode: 'PORTAL',
     });
   });
