@@ -58,7 +58,13 @@ services:
   - type: web
     name: mara-app
     runtime: static
-    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm --filter @mara/mortgage-calc build && pnpm --filter @mara/shared-types build && cd apps/mobile && npx expo export --platform web
+    # pnpm comes from a pinned global install rather than `corepack enable`:
+    # corepack writes shims into the Node install dir and verifies registry
+    # signatures at build time, neither of which is reliable in Render's
+    # native build environment (it works in the API's Docker image because
+    # that runs as root). --prod=false keeps devDependencies when the builder
+    # sets NODE_ENV=production; the Expo CLI needs them.
+    buildCommand: npm install -g pnpm@11.15.0 && pnpm install --frozen-lockfile --prod=false && pnpm --filter @mara/mortgage-calc build && pnpm --filter @mara/shared-types build && cd apps/mobile && npx expo export --platform web
     staticPublishPath: apps/mobile/dist
     envVars:
       - key: NODE_VERSION
@@ -77,7 +83,9 @@ services:
     name: mara-admin
     runtime: node
     plan: free
-    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm --filter @mara/admin... build
+    # Same pinned-pnpm reasoning as mara-app above; next build needs the
+    # devDependencies (typescript, types) that --prod=false preserves.
+    buildCommand: npm install -g pnpm@11.15.0 && pnpm install --frozen-lockfile --prod=false && pnpm --filter @mara/admin... build
     startCommand: cd apps/admin && npx next start --port $PORT
     envVars:
       - key: NODE_VERSION
