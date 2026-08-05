@@ -194,6 +194,14 @@ const seedAdmin = async () => {
   console.log(`admin bootstrap: created ADMIN account ${email}`);
 };
 
+/**
+ * Set on the deployed API, which seeds on every boot: without it a restart
+ * (free instances spin down when idle) would overwrite Mara's program edits
+ * with the copy baked in here. Run the seed without it to deliberately push
+ * updated program content.
+ */
+const bootstrapOnly = process.env.SEED_BOOTSTRAP_ONLY === '1';
+
 const main = async () => {
   for (const block of CONTENT_BLOCKS) {
     await prisma.contentBlock.upsert({
@@ -207,12 +215,16 @@ const main = async () => {
       where: { slug: program.slug },
       create: { ...program, published: true },
       // Content refreshes on re-seed, but never un-publishes admin edits.
-      update: { title: program.title, summary: program.summary, content: program.content, sortOrder: program.sortOrder },
+      update: bootstrapOnly
+        ? {}
+        : { title: program.title, summary: program.summary, content: program.content, sortOrder: program.sortOrder },
     });
   }
   await seedAdmin();
   const count = await prisma.loanProgram.count();
-  console.log(`seeded ${PROGRAMS.length} programs (table now has ${count})`);
+  console.log(
+    `seeded ${PROGRAMS.length} programs (table now has ${count})${bootstrapOnly ? ' [bootstrap-only]' : ''}`,
+  );
 };
 
 main()

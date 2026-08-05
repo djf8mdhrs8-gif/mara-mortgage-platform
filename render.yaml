@@ -34,6 +34,12 @@ services:
         generateValue: true
       - key: NODE_ENV
         value: production
+      # The container seeds reference content on boot; bootstrap-only so a
+      # restart never reverts Mara's admin edits. To create her ADMIN account,
+      # add ADMIN_EMAIL and ADMIN_PASSWORD (12+ chars) in the Render dashboard
+      # and redeploy — the seed creates the account once, then skips it.
+      - key: SEED_BOOTSTRAP_ONLY
+        value: '1'
       # The real deployed origins — mara-app and mara-api both got name
       # suffixes because those names were already taken globally on Render.
       - key: WEB_ORIGINS
