@@ -4,11 +4,16 @@ The borrower app is built with Expo and runs fully in the browser, so the same
 codebase ships as a real website today. This guide deploys all three pieces to
 **Render** (one account, ~15 minutes):
 
-| Piece | What it is | URL after deploy |
+| Piece | What it is | Live URL |
 |---|---|---|
-| `mara-api` | The backend (NestJS + Postgres) | `https://mara-api.onrender.com` |
-| `mara-app` | The borrower web app (static Expo export) | `https://mara-app.onrender.com` |
+| `mara-api` | The backend (NestJS + Postgres) | `https://mara-api-d7w1.onrender.com` |
+| `mara-app` | The borrower web app (static Expo export) | `https://mara-app-7bu2.onrender.com` |
 | `mara-admin` | Mara's admin site (Next.js) | `https://mara-admin.onrender.com` |
+
+Service names are global on Render, so `mara-api` and `mara-app` were already
+taken and ours got random suffixes. Those exact URLs are wired into
+`render.yaml`; if you ever recreate the services from scratch the suffixes will
+change and the three env vars in Step 2 need updating to match.
 
 ## Read this first: preview vs. real clients
 

@@ -34,8 +34,10 @@ services:
         generateValue: true
       - key: NODE_ENV
         value: production
+      # The real deployed origins — mara-app and mara-api both got name
+      # suffixes because those names were already taken globally on Render.
       - key: WEB_ORIGINS
-        value: https://mara-app.onrender.com,https://mara-admin.onrender.com
+        value: https://mara-app-7bu2.onrender.com,https://mara-admin.onrender.com
       # Ephemeral on the free plan — document uploads survive until the next
       # deploy/restart. For durable storage set the S3_* vars below (Cloudflare
       # R2 free tier works; see DEPLOYMENT.md "Durable document storage") —
@@ -58,19 +60,22 @@ services:
   - type: web
     name: mara-app
     runtime: static
-    # pnpm comes from a pinned global install rather than `corepack enable`:
-    # corepack writes shims into the Node install dir and verifies registry
-    # signatures at build time, neither of which is reliable in Render's
-    # native build environment (it works in the API's Docker image because
-    # that runs as root). --prod=false keeps devDependencies when the builder
-    # sets NODE_ENV=production; the Expo CLI needs them.
+    # Render's build images ship node/npm but not pnpm, so install the pinned
+    # version first. --prod=false keeps devDependencies if the builder sets
+    # NODE_ENV=production; the Expo CLI needs them.
     buildCommand: npm install -g pnpm@11.15.0 && pnpm install --frozen-lockfile --prod=false && pnpm --filter @mara/mortgage-calc build && pnpm --filter @mara/shared-types build && cd apps/mobile && npx expo export --platform web
     staticPublishPath: apps/mobile/dist
     envVars:
+      # Must be >= 22.13: pnpm 11 refuses to run on anything older, and Render
+      # installs dependencies before the build command, so too old a version
+      # fails the deploy in seconds. Staying on 22.x matches CI and the API's
+      # node:22-slim image.
       - key: NODE_VERSION
-        value: 22.11.0
+        value: 22.22.0
+      # Compiled into the static bundle at build time — changing it requires a
+      # rebuild, not just an env edit.
       - key: EXPO_PUBLIC_API_URL
-        value: https://mara-api.onrender.com
+        value: https://mara-api-d7w1.onrender.com
     routes:
       # expo-router static export emits per-route HTML; this catches client-side
       # routes (e.g. /calculators/quick refreshes) that have no file.
@@ -83,14 +88,15 @@ services:
     name: mara-admin
     runtime: node
     plan: free
-    # Same pinned-pnpm reasoning as mara-app above; next build needs the
-    # devDependencies (typescript, types) that --prod=false preserves.
+    # Same pnpm bootstrap as mara-app; next build needs the devDependencies
+    # (typescript, types) that --prod=false preserves.
     buildCommand: npm install -g pnpm@11.15.0 && pnpm install --frozen-lockfile --prod=false && pnpm --filter @mara/admin... build
     startCommand: cd apps/admin && npx next start --port $PORT
     envVars:
+      # See the NODE_VERSION note on mara-app — pnpm 11 requires >= 22.13.
       - key: NODE_VERSION
-        value: 22.11.0
+        value: 22.22.0
       - key: NEXT_PUBLIC_API_URL
-        value: https://mara-api.onrender.com
+        value: https://mara-api-d7w1.onrender.com
       - key: API_URL
-        value: https://mara-api.onrender.com
+        value: https://mara-api-d7w1.onrender.com
