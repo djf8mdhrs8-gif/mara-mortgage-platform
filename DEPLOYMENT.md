@@ -56,31 +56,48 @@ Render dashboard, then redeploy the affected services:
 - `mara-app` → env var `EXPO_PUBLIC_API_URL` = the real API URL
 - `mara-admin` → env vars `NEXT_PUBLIC_API_URL` and `API_URL` = the real API URL
 
-## Step 3 — Seed the database (content + Mara's admin account)
+## Step 3 — Create Mara's admin account
 
-The fresh database has no loan programs, compliance text, or users. From this
-repo on your machine (PowerShell), using the **External Database URL** from the
-`mara-db` page on Render:
+Reference content (the 11 loan programs, compliance text, and the privacy
+policy) seeds **automatically**: the API container runs the seed after
+migrations on every boot. It runs with `SEED_BOOTSTRAP_ONLY=1`, so it fills an
+empty database but never overwrites content Mara has since edited.
+
+The one thing it can't guess is her login. In the Render dashboard →
+`mara-api` → Environment, add:
+
+- `ADMIN_EMAIL` = the address she'll sign in with
+- `ADMIN_PASSWORD` = a strong password, **12+ characters**
+
+Save (the API redeploys). On boot the seed creates that ADMIN account once and
+skips it on every later restart, so the password env var is only read the first
+time. Give Mara the email and password, then **delete `ADMIN_PASSWORD` from the
+dashboard** — the account already exists and there's no reason to keep a
+plaintext password sitting in the environment.
+
+To deliberately push updated loan-program copy later, run the seed from your
+machine *without* the bootstrap flag, using the **External Database URL** from
+the `mara-db` page:
 
 ```bash
 cd apps/api
 ```
 
 ```bash
-$env:DATABASE_URL='<External Database URL>'; $env:ADMIN_EMAIL='mara@yourdomain.com'; $env:ADMIN_PASSWORD='<a strong password, 12+ chars>'; pnpm prisma:seed
+$env:DATABASE_URL='<External Database URL>'; pnpm prisma:seed
 ```
-
-That seeds the 11 loan programs, articles, the privacy policy, and compliance
-text, and creates Mara's ADMIN account (never overwrites an existing user; skip
-the ADMIN_* vars to seed content only). Give Mara the email/password you chose —
-she signs into `mara-admin` with it and can change content immediately.
 
 ## Step 4 — Check it works
 
-1. Open `https://mara-app.onrender.com` → the branded sign-in screen loads.
+1. Open `https://mara-app-7bu2.onrender.com` → the branded sign-in screen loads.
 2. Register a borrower account → run a calculator → save a scenario.
 3. Open `https://mara-admin.onrender.com` → sign in as Mara → Analytics shows
    the new user; Messages/Content/Calculators all live.
+
+Verified live on 2026-08-04: all three services return 200, the API reports
+`db: up`, the borrower app renders the privacy policy fetched from the API
+(proving the browser → API wiring and CORS), and the API accepts both real
+origins while refusing others.
 
 Note: free-tier services **sleep after idle** — the first request after a quiet
 period takes ~30–60s while the API wakes. Fine while you're evaluating.
