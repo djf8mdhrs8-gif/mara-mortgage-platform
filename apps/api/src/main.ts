@@ -52,7 +52,12 @@ async function bootstrap(): Promise<void> {
     .build();
   const buildDocument = (): ReturnType<typeof SwaggerModule.createDocument> =>
     SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('api/docs', app, buildDocument);
+  // Swagger UI is a development tool. The deployed API answers on the public
+  // internet, so it doesn't publish its full endpoint surface there; spec
+  // generation below builds the document directly and is unaffected.
+  if (process.env.NODE_ENV !== 'production') {
+    SwaggerModule.setup('api/docs', app, buildDocument);
+  }
 
   // Spec-emission mode: write openapi.json and exit instead of serving.
   // Used by `pnpm openapi:generate` to feed the typed-client pipeline.

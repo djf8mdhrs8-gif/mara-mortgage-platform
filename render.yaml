@@ -7,6 +7,11 @@
 # to the real URLs and redeploy the affected services.
 
 databases:
+  # WARNING: Render deletes a FREE Postgres instance 30 days after creation
+  # (plus a 14-day grace period) — accounts, scenarios, and messages go with
+  # it. Fine for previewing; before real borrowers sign up, move DATABASE_URL
+  # to a permanent database (Neon free tier or a paid instance here). See
+  # DEPLOYMENT.md "Durable database".
   - name: mara-db
     plan: free
     databaseName: mara

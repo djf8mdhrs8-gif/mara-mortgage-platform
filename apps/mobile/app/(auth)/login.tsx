@@ -80,6 +80,16 @@ export default function LoginScreen() {
         <Text style={styles.compliance} testID="login-compliance">
           {compliance.body}
         </Text>
+
+        <Text style={styles.legalLinks}>
+          <Link href="/privacy" style={styles.link} testID="login-privacy">
+            Privacy Policy
+          </Link>
+          {'   ·   '}
+          <Link href="/legal" style={styles.link} testID="login-legal">
+            Licensing & Disclosures
+          </Link>
+        </Text>
       </View>
     </KeyboardAvoidingView>
   );
@@ -132,5 +142,11 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
     marginTop: spacing.lg,
+  },
+  legalLinks: {
+    ...typography.caption,
+    fontSize: 11,
+    textAlign: 'center',
+    marginTop: spacing.xs,
   },
 });

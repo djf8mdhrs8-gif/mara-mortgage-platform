@@ -138,6 +138,20 @@ const CONTENT_BLOCKS = [
     body: 'Mara — NMLS #1925279 · Certified Home Loans NMLS #1806779 · Equal Housing Lender',
   },
   {
+    key: 'legal.privacy',
+    body: P(
+      '[PLACEHOLDER — pending review by Mara/compliance before this link is shared publicly. Set the effective date and confirm the wording below matches Certified Home Loans policy.]',
+      'This policy explains what the Mara Mortgage Solutions app collects, why, and who it is shared with.',
+      'Information you give us: your name, email address, and password when you create an account; the figures you enter into the calculators; documents you upload for your loan; and the messages you send to the loan team.',
+      'Information we create: your loan status and milestones, an access record for every document (who opened it and when), and sign-in activity used to protect your account.',
+      'How we use it: to run your account, produce your calculator results, deliver documents and messages to your loan team, notify you about your loan, and keep the service secure.',
+      'Who we share it with: Certified Home Loans staff working on your loan, and the service providers who host the app and store your documents under contract. Choosing "Start my application" opens Arive, our loan-application provider, which handles that information under its own privacy policy. We do not sell your personal information or share it for advertising.',
+      'Security: passwords are stored only as irreversible hashes, traffic is encrypted in transit, documents are access-controlled, and document access is logged.',
+      'Your choices: you can request a copy of your information, ask us to correct it, or ask us to close your account and delete what we are not required to retain. Lending records are subject to legal retention requirements.',
+      'Contact us about privacy at missa@certifiedhomeloans.com or (954) 612-5535.',
+    ),
+  },
+  {
     key: 'compliance.disclosures',
     body: P(
       'Mara — NMLS #1925279 · Certified Home Loans, Company NMLS #1806779. Verify our licensing at nmlsconsumeraccess.org.',

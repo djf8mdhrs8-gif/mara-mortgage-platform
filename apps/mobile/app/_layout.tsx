@@ -27,6 +27,11 @@ Sentry.init({
 // a returning user must never see a login-screen flash.
 void SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
+// Readable by anyone, signed in or not. The privacy policy in particular must
+// answer at a public URL: both app stores require it, and prospective
+// borrowers reach it from the sign-in screen before they have an account.
+const PUBLIC_ROUTES = new Set(['privacy', 'legal']);
+
 /** Redirects based on session state: signed out → (auth), signed in → (tabs). */
 function useAuthGate() {
   const status = useAuthStore((s) => s.status);
@@ -37,7 +42,8 @@ function useAuthGate() {
   useEffect(() => {
     if (status === 'restoring') return;
     const inAuthGroup = segments[0] === '(auth)';
-    if (user === null && !inAuthGroup) {
+    const isPublic = segments.length > 0 && PUBLIC_ROUTES.has(segments[0]);
+    if (user === null && !inAuthGroup && !isPublic) {
       router.replace('/login');
     } else if (user !== null && inAuthGroup) {
       router.replace('/');
