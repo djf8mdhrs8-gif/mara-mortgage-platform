@@ -17,6 +17,11 @@ const KEYS = [
     label: 'Licensing & Disclosures page (paragraphs separated by a blank line)',
     multiline: true,
   },
+  {
+    key: 'legal.privacy',
+    label: 'Privacy Policy page — public, linked from the sign-in screen (paragraphs separated by a blank line)',
+    multiline: true,
+  },
 ] as const;
 
 export default function ComplianceEditorPage() {
@@ -47,10 +52,11 @@ export default function ComplianceEditorPage() {
 
   return (
     <section style={{ display: 'grid', gap: 14, maxWidth: 720 }}>
-      <h1 style={ui.h1}>Compliance text</h1>
+      <h1 style={ui.h1}>Compliance &amp; legal text</h1>
       <p style={ui.muted}>
         This copy renders in the borrower app immediately — no app update needed. Have your
-        compliance contact review any changes.
+        compliance contact review any changes. The privacy policy is publicly readable without
+        signing in, so treat edits to it as published the moment you save.
       </p>
       {error !== null ? <p style={ui.error}>{error}</p> : null}
       {KEYS.map(({ key, label, multiline }) => (

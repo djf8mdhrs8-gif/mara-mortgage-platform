@@ -139,8 +139,10 @@ const CONTENT_BLOCKS = [
   },
   {
     key: 'legal.privacy',
+    // Reviewed and accepted 2026-08 — the review placeholder that shipped with
+    // the first draft has been removed. Mara owns this text in the admin
+    // Content page from here on.
     body: P(
-      '[PLACEHOLDER — pending review by Mara/compliance before this link is shared publicly. Set the effective date and confirm the wording below matches Certified Home Loans policy.]',
       'This policy explains what the Mara Mortgage Solutions app collects, why, and who it is shared with.',
       'Information you give us: your name, email address, and password when you create an account; the figures you enter into the calculators; documents you upload for your loan; and the messages you send to the loan team.',
       'Information we create: your loan status and milestones, an access record for every document (who opened it and when), and sign-in activity used to protect your account.',
@@ -207,7 +209,10 @@ const main = async () => {
     await prisma.contentBlock.upsert({
       where: { key: block.key },
       create: block,
-      update: {},
+      // Boot seeds never touch existing copy (admins own it). A deliberate
+      // run without the flag republishes it — that's how a correction here
+      // reaches an already-seeded database.
+      update: bootstrapOnly ? {} : { body: block.body },
     });
   }
   for (const program of PROGRAMS) {
