@@ -69,11 +69,19 @@ The one thing it can't guess is her login. In the Render dashboard →
 - `ADMIN_EMAIL` = the address she'll sign in with
 - `ADMIN_PASSWORD` = a strong password, **12+ characters**
 
-Save (the API redeploys). On boot the seed creates that ADMIN account once and
-skips it on every later restart, so the password env var is only read the first
-time. Give Mara the email and password, then **delete `ADMIN_PASSWORD` from the
-dashboard** — the account already exists and there's no reason to keep a
-plaintext password sitting in the environment.
+While you're on that page, also change `SEED_BOOTSTRAP_ONLY` from `1` to `0`.
+That makes this one redeploy *also* republish the reference copy, which is how
+a corrected privacy policy or program text reaches a database that was seeded
+before the correction.
+
+Save — the API redeploys, creates the ADMIN account, and refreshes the copy.
+
+Then go back and finish up:
+
+- **Delete `ADMIN_PASSWORD`.** The account exists now; there's no reason to
+  leave a plaintext password in the environment.
+- **Set `SEED_BOOTSTRAP_ONLY` back to `1`.** This is what stops a restart from
+  reverting Mara's own content edits, and free instances restart often.
 
 To deliberately push updated loan-program copy later, run the seed from your
 machine *without* the bootstrap flag, using the **External Database URL** from
@@ -116,10 +124,14 @@ Work down this list. Everything here is settings and accounts — no code change
       seeded with a clearly marked `[PLACEHOLDER]` paragraph. She edits them in
       the admin site under Content; the policy is public at `/privacy` and is
       linked from the sign-in screen, so clients will read it.
-- [ ] **Consider the Starter plan for `mara-api`** (~$7/mo at the time of
-      writing). On free, a client opening the link after a quiet period waits
-      ~50 seconds for sign-in — a poor first impression of her brand. The
-      borrower site itself is static and always loads instantly either way.
+- [ ] **Upgrade `mara-api` to the Starter plan** (~$7/mo at the time of
+      writing). Measured on 2026-08-11 after an idle period: the borrower site
+      answered in **0.4s** (static, always fast), but the admin service took
+      **47s** and the API had just cold-started. Anything needing sign-in,
+      calculators, or messages waits on the API, so upgrading that one service
+      fixes the client-facing experience. `mara-admin` can stay free — Mara
+      tolerating an occasional slow load of her own back office is a much
+      cheaper compromise than a borrower staring at a dead sign-in screen.
 - [ ] **Set up a custom domain** (see the end of this doc) so the link Mara
       shares looks like her business, not `onrender.com`.
 
