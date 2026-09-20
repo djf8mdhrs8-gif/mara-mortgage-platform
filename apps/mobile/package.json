@@ -17,7 +17,7 @@
     "@hookform/resolvers": "^5.4.0",
     "@mara/mortgage-calc": "workspace:*",
     "@mara/shared-types": "workspace:*",
-    "@sentry/react-native": "~7.11.0",
+    "@sentry/react-native": "~8.21.0",
     "@tanstack/react-query": "^5.101.2",
     "expo": "~57.0.10",
     "expo-constants": "~57.0.9",
